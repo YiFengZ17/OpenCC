@@ -18,6 +18,10 @@ import { resolveRouteDocumentTitle } from './title'
  * Route definitions with lazy loading
  */
 const routes: RouteRecordRaw[] = [
+  { path:'/help', name:'OpenCCHelp', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:false,title:'接入文档'} },
+  { path:'/announcements', name:'OpenCCAnnouncements', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:true,title:'站内公告'} },
+  { path:'/model-test', name:'OpenCCTrace', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:true,title:'模型检测'} },
+  { path:'/pricing', name:'OpenCCPricing', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:false,title:'模型计费规则'} },
   // ==================== Setup Routes ====================
   {
     path: '/setup',
@@ -33,10 +37,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/home',
     name: 'Home',
-    component: () => import('@/views/HomeView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: false,
-      title: 'Home'
+      title: '首页'
     }
   },
   {
@@ -178,11 +182,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/model-plaza',
     name: 'ModelPlaza',
-    component: () => import('@/views/ModelPlazaView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: false,
-      title: 'Model Plaza',
-      titleKey: 'modelPlaza.title'
+      title: '模型广场',
     }
   },
 
@@ -194,24 +197,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/user/DashboardView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'Dashboard',
-      titleKey: 'dashboard.title',
+      title: '账户工作台',
       descriptionKey: 'dashboard.welcomeMessage'
     }
   },
   {
     path: '/keys',
     name: 'Keys',
-    component: () => import('@/views/user/KeysView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'API Keys',
-      titleKey: 'keys.title',
+      title: 'API 密钥',
       descriptionKey: 'keys.description'
     }
   },
@@ -231,24 +232,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/usage',
     name: 'Usage',
-    component: () => import('@/views/user/UsageView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'Usage Records',
-      titleKey: 'usage.title',
+      title: '用量明细',
       descriptionKey: 'usage.description'
     }
   },
   {
     path: '/redeem',
     name: 'Redeem',
-    component: () => import('@/views/user/RedeemView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'Redeem Code',
-      titleKey: 'redeem.title',
+      title: '账户充值',
       descriptionKey: 'redeem.description'
     }
   },
@@ -317,13 +316,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/orders',
     name: 'OrderList',
-    component: () => import('@/views/user/UserOrdersView.vue'),
+    component: () => import('@/opencc/WorkspaceView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'My Orders',
-      titleKey: 'nav.myOrders',
-      requiresPayment: true
+      title: '兑换记录',
     }
   },
   {

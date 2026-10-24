@@ -2,6 +2,7 @@ import { defineConfig, loadEnv, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import checker from 'vite-plugin-checker'
 import { resolve } from 'path'
+import { openccDemo } from './opencc-demo'
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -86,10 +87,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
-      checker({
-        vueTsc: true
-      }),
-      injectPublicSettings(backendUrl)
+      ...(mode === 'opencc-demo' ? [] : [checker({ vueTsc: true, enableBuild: false })]),
+      ...(mode === 'opencc-demo' ? [openccDemo()] : [injectPublicSettings(backendUrl)])
     ],
   resolve: {
     alias: {

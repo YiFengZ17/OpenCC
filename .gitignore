@@ -161,3 +161,12 @@ issues/
 .vite/
 # 本地闭源插件开发目录及构建产物不进入 Sub2API 仓库
 /plugins/
+
+# OpenCC deployment secrets and generated TS configuration outputs
+deploy/.env.opencc
+frontend/opencc-demo.js
+frontend/opencc-demo.d.ts
+
+# Browser-side ModelTrace source is required for reproducible builds.
+!frontend/src/opencc/vendor/
+!frontend/src/opencc/vendor/**
