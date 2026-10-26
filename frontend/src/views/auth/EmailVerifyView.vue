@@ -720,6 +720,7 @@ async function handleVerify(): Promise<void> {
     } else {
       // Register with verification code
       await authStore.register({
+        username: JSON.parse(sessionStorage.getItem("register_data") || "{}").username,
         email: email.value,
         password: password.value,
         verify_code: verifyCode.value.trim(),

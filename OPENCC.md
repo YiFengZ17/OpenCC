@@ -5,16 +5,18 @@
 仓库：https://github.com/YiFengZ17/OpenCC（私有）。
 
 ## 项目定位
-基于 Sub2API 的团队内部模型 API 工具：管理员向上游采购调用额度，为团队成员开通账号、独立 API Key 和人民币余额，按高于上游成本的价格扣费，差额为毛利（见 opencc-docs/08）。
+基于 Sub2API 的团队内部模型 API 工具：管理员向上游采购调用额度，为团队成员开通账号、独立 API Key 和人民币余额，按高于上游成本的价格扣费，差额为毛利（见 opencc-docs/11）。
 
 已实现：OpenCC 用户界面、模型检测、人民币计价、兑换码充值、后台毛利统计、数据库备份脚本。已在本地用 PostgreSQL + Redis + 模拟上游完成调用、扣费、毛利和上游倍率同步的端到端验证（opencc-docs/07）。尚未部署到 VPS，也未接入真实上游。
 
 ## 阅读与执行顺序
 1. opencc-docs/04-实现与部署说明.md：本地运行、页面、上线步骤。
 2. opencc-docs/05-待配置项.md：上线前需要填写的配置。
-3. opencc-docs/08-团队自用与差价计费.md：成本倍率 U、售价倍率 D、后台配置步骤。
-4. opencc-docs/06-模型检测与积分计费.md：ModelTrace 与计价单位细节。
-5. opencc-docs/07-验收记录.md：已验证与未验证项。
+3. opencc-docs/11-团队自用与差价计费.md：成本倍率 U、售价倍率 D、后台配置步骤。
+4. opencc-docs/08-分组与credit核对.md：上游各分组计费方式，Claude 为 credit 计费。
+5. opencc-docs/10-credit结算接入进度.md：Claude credit 逐笔结算模块的进度与启用前条件。
+6. opencc-docs/06-模型检测与积分计费.md：ModelTrace 与计价单位细节。
+7. opencc-docs/07-验收记录.md、09-前端更新验收.md：已验证与未验证项。
 
 早期规划文档（01–03 及实施计划）不在本仓库中。
 

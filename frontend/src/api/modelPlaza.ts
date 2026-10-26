@@ -56,6 +56,7 @@ export interface PlazaModel {
 }
 
 export interface ModelPlazaGroup {
+  credit_billing?: { enabled: boolean; unit_price: number; started_at?: string }
   id: number
   name: string
   description: string

@@ -8,6 +8,7 @@ const added: RouteRecordRaw[] = [
   { path: '/help', name: 'OpenCCHelp', component: workspace, meta: { requiresAuth: false, title: '接入文档' } },
   { path: '/announcements', name: 'OpenCCAnnouncements', component: workspace, meta: { requiresAuth: true, title: '站内公告' } },
   { path: '/model-test', name: 'OpenCCTrace', component: workspace, meta: { requiresAuth: true, title: '模型检测' } },
+  { path: '/groups', name: 'OpenCCGroups', component: workspace, meta: { requiresAuth: true, title: '模型分组' } },
   { path: '/pricing', name: 'OpenCCPricing', component: workspace, meta: { requiresAuth: false, title: '模型计费规则' } }
 ]
 

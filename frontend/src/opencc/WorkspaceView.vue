@@ -1,5 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch, defineAsyncComponent } from 'vue'
+import GroupsPanel from "./GroupsPanel.vue"
+import HelpGuide from "./HelpGuide.vue"
+import PlatformIcon from "@/components/common/PlatformIcon.vue"
+import {
+  computed,
+  ref,
+  watch,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+  defineAsyncComponent
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { keysAPI } from '@/api/keys'
@@ -35,6 +46,7 @@ const nav = [
   { path: '/keys', name: 'API 密钥', icon: 'key' },
   { path: '/usage', name: '用量明细', icon: 'chart' },
   { path: '/model-test', name: '模型检测', icon: 'shield' },
+  { path: '/groups', name: '模型分组', icon: 'models' },
   { path: '/redeem', name: '账户充值', icon: 'wallet' },
   { path: '/orders', name: '兑换记录', icon: 'order' },
   { path: '/announcements', name: '站内公告', icon: 'bell' },
@@ -128,6 +140,57 @@ async function copy(s: string) {
     error.value = '浏览器无法访问剪贴板，请选中文本手动复制。'
   }
 }
+// ---- theme (light / dark) -------------------------------------------------
+// A stored choice wins; otherwise the OS preference is followed live.
+const THEME_KEY = 'opencc_theme'
+type Theme = 'light' | 'dark'
+const storedTheme = ref<Theme | null>(null),
+  systemDark = ref(false)
+const isDark = computed(() =>
+  storedTheme.value ? storedTheme.value === 'dark' : systemDark.value
+)
+let colorQuery: MediaQueryList | undefined
+const onColorChange = (e: MediaQueryListEvent) => (systemDark.value = e.matches)
+function applyTheme() {
+  const root = document.documentElement
+  if (storedTheme.value) root.setAttribute('data-oc-theme', storedTheme.value)
+  else root.removeAttribute('data-oc-theme')
+}
+function toggleTheme() {
+  storedTheme.value = isDark.value ? 'light' : 'dark'
+  applyTheme()
+  try {
+    localStorage.setItem(THEME_KEY, storedTheme.value)
+  } catch {
+    /* storage unavailable: keep the choice for this session only */
+  }
+}
+onMounted(() => {
+  try {
+    const v = localStorage.getItem(THEME_KEY)
+    if (v === 'light' || v === 'dark') storedTheme.value = v
+  } catch {
+    /* ignore */
+  }
+  colorQuery = window.matchMedia?.('(prefers-color-scheme: dark)')
+  if (colorQuery) {
+    systemDark.value = colorQuery.matches
+    colorQuery.addEventListener?.('change', onColorChange)
+  }
+  applyTheme()
+})
+onBeforeUnmount(() => {
+  colorQuery?.removeEventListener?.('change', onColorChange)
+  document.documentElement.removeAttribute('data-oc-theme')
+  clearTimeout(timer)
+})
+const keyNameInput = ref<HTMLInputElement>()
+watch(dialog, async (open) => {
+  if (!open) return
+  await nextTick()
+  keyNameInput.value?.focus()
+})
+
 let generation = 0
 async function load() {
   const g = ++generation,
@@ -355,6 +418,7 @@ function logout(){auth.logout();void router.push('/home')}
           <RouterLink
             :to="n.path"
             :class="['oc-nav-item', { active: page === n.path }]"
+            :aria-current="page === n.path ? 'page' : undefined"
             ><Icon :name="n.icon" /><span>{{ n.name }}</span
             ><span v-if="n.path === '/model-plaza'" class="oc-nav-new"
               >NEW</span
@@ -392,6 +456,14 @@ function logout(){auth.logout();void router.push('/home')}
         <div class="oc-top-actions">
           <span v-if="demo" class="oc-tag amber">本地演示</span
           ><RouterLink to="/help" class="oc-header-docs">接入文档 ↗</RouterLink
+          ><button
+            type="button"
+            class="oc-icon-button"
+            :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"
+            :title="isDark ? '浅色模式' : '深色模式'"
+            @click="toggleTheme"
+          >
+            <Icon :name="isDark ? 'sun' : 'moon'" /></button
           ><RouterLink
             to="/announcements"
             class="oc-icon-button"
@@ -451,7 +523,7 @@ function logout(){auth.logout();void router.push('/home')}
                 &lt; / &gt;<small>OpenCC</small>
               </div>
               <span class="oc-orbit-node claude">✳<small>Claude</small></span
-              ><span class="oc-orbit-node gpt">◉<small>GPT</small></span
+              ><span class="oc-orbit-node gpt"><PlatformIcon platform="openai" size="lg" /><small>GPT</small></span
               ><span class="oc-orbit-node grok">𝕏<small>Grok</small></span
               ><span class="oc-orbit-dot"></span
               ><code>API / Tokens / Usage</code>
@@ -484,9 +556,7 @@ function logout(){auth.logout();void router.push('/home')}
               :key="item.name"
               to="/model-plaza"
               class="oc-provider-card"
-              ><span :class="['oc-provider-icon', 'p' + i]">{{
-                item.mark
-              }}</span
+              ><span :class="['oc-provider-icon', 'p' + i]"><PlatformIcon v-if="item.name === 'GPT'" platform="openai" size="lg" /><template v-else>{{ item.mark }}</template></span
               ><span class="oc-small-label">0{{ i + 1 }} / MODEL FAMILY</span>
               <h3>{{ item.name }}</h3>
               <p>{{ item.desc }}</p>
@@ -659,13 +729,7 @@ function logout(){auth.logout();void router.push('/home')}
                           ? 'p1'
                           : 'p2'
                     ]"
-                    >{{
-                      m.provider === 'Claude'
-                        ? '✳'
-                        : m.provider === 'GPT'
-                          ? '◉'
-                          : '𝕏'
-                    }}</span
+                    ><PlatformIcon v-if="m.provider === 'GPT'" platform="openai" size="lg" /><template v-else>{{ m.provider === 'Claude' ? '✳' : '𝕏' }}</template></span
                   ><span class="oc-tag" :class="{ amber: !m.live }">{{
                     m.live ? '已配置渠道' : '目录参考'
                   }}</span>
@@ -701,7 +765,14 @@ function logout(){auth.logout();void router.push('/home')}
               </div>
             </div>
             <section class="oc-panel oc-table-wrap">
-              <table>
+              <div
+                v-if="busy && !keys.length"
+                class="oc-skeleton"
+                aria-hidden="true"
+              >
+                <i v-for="n in 5" :key="n"></i>
+              </div>
+              <table v-else class="oc-table-cards">
                 <thead>
                   <tr>
                     <th>名称 / 创建时间</th>
@@ -714,11 +785,11 @@ function logout(){auth.logout();void router.push('/home')}
                 </thead>
                 <tbody>
                   <tr v-for="k in keys" :key="k.id">
-                    <td>
+                    <td data-label="名称">
                       <strong>{{ k.name }}</strong
                       ><small>{{ date(k.created_at) }}</small>
                     </td>
-                    <td>
+                    <td data-label="密钥">
                       <code
                         >{{ k.key.slice(0, 8) }}••••{{ k.key.slice(-4) }}</code
                       ><button
@@ -729,19 +800,19 @@ function logout(){auth.logout();void router.push('/home')}
                         <Icon name="copy" />
                       </button>
                     </td>
-                    <td>{{ k.group?.name || '默认分组' }}</td>
-                    <td>
+                    <td data-label="分组">{{ k.group?.name || '默认分组' }}</td>
+                    <td data-label="状态">
                       <span
                         class="oc-tag"
                         :class="{ muted: k.status !== 'active' }"
                         >{{ k.status === 'active' ? '启用' : '停用' }}</span
                       >
                     </td>
-                    <td>
+                    <td data-label="已用 / 限额">
                       {{ money(k.quota_used) }} /
                       {{ k.quota ? money(k.quota) : '不限额' }}
                     </td>
-                    <td>
+                    <td data-label="操作">
                       <div class="oc-inline-actions">
                         <button :disabled="saving" @click="toggleKey(k)">
                           {{ k.status === 'active' ? '停用' : '启用' }}</button
@@ -789,7 +860,14 @@ function logout(){auth.logout();void router.push('/home')}
                   /><button type="submit">查询</button>
                 </form>
               </div>
-              <table>
+              <div
+                v-if="busy && !logs.length"
+                class="oc-skeleton"
+                aria-hidden="true"
+              >
+                <i v-for="n in 5" :key="n"></i>
+              </div>
+              <table v-else class="oc-table-cards">
                 <thead>
                   <tr>
                     <th>时间 / 请求 ID</th>
@@ -802,23 +880,27 @@ function logout(){auth.logout();void router.push('/home')}
                 </thead>
                 <tbody>
                   <tr v-for="l in logs" :key="l.id">
-                    <td>
+                    <td data-label="时间">
                       {{ date(l.created_at)
                       }}<small>{{ l.request_id?.slice(0, 18) || '—' }}</small>
                     </td>
-                    <td>
+                    <td data-label="模型">
                       <code>{{ l.model }}</code>
                     </td>
-                    <td>{{ number(l.input_tokens) }}</td>
-                    <td>{{ number(l.output_tokens) }}</td>
-                    <td>
+                    <td data-label="输入 Tokens">
+                      {{ number(l.input_tokens) }}
+                    </td>
+                    <td data-label="输出 Tokens">
+                      {{ number(l.output_tokens) }}
+                    </td>
+                    <td data-label="耗时">
                       {{
                         l.duration_ms
                           ? `${(l.duration_ms / 1000).toFixed(2)} s`
                           : '—'
                       }}
                     </td>
-                    <td>
+                    <td data-label="费用">
                       <strong>{{ money(l.actual_cost, 4) }}</strong>
                     </td>
                   </tr>
@@ -888,10 +970,11 @@ function logout(){auth.logout();void router.push('/home')}
             </div>
           </template>
           <TracePanel v-if="page === '/model-test'" />
+          <GroupsPanel v-if="page === '/groups'" />
           <PricingPanel v-if="page === '/pricing'" />
           <template v-if="page === '/orders'">
             <section class="oc-panel oc-table-wrap">
-              <table v-if="orderTab === 'redeem'">
+              <table v-if="orderTab === 'redeem'" class="oc-table-cards">
                 <thead>
                   <tr>
                     <th>记录编号</th>
@@ -902,15 +985,15 @@ function logout(){auth.logout();void router.push('/home')}
                 </thead>
                 <tbody>
                   <tr v-for="h in history" :key="h.id">
-                    <td>#{{ h.id }}</td>
-                    <td>
+                    <td data-label="记录编号">#{{ h.id }}</td>
+                    <td data-label="类型">
                       {{
                         ['balance', 'admin_balance'].includes(h.type)
                           ? '账户余额'
                           : h.type
                       }}
                     </td>
-                    <td>
+                    <td data-label="到账金额 / 权益">
                       {{
                         ['balance', 'admin_balance'].includes(h.type)
                           ? money(h.value)
@@ -919,11 +1002,13 @@ function logout(){auth.logout();void router.push('/home')}
                             : h.value
                       }}
                     </td>
-                    <td>{{ date(h.used_at || h.created_at) }}</td>
+                    <td data-label="兑换时间">
+                      {{ date(h.used_at || h.created_at) }}
+                    </td>
                   </tr>
                 </tbody>
               </table>
-              <table v-else>
+              <table v-else class="oc-table-cards">
                 <thead>
                   <tr>
                     <th>订单号</th>
@@ -935,19 +1020,21 @@ function logout(){auth.logout();void router.push('/home')}
                 </thead>
                 <tbody>
                   <tr v-for="o in orders" :key="o.id">
-                    <td>
+                    <td data-label="订单号">
                       <code>{{ o.out_trade_no || o.id }}</code>
                     </td>
-                    <td>{{ money(o.amount) }}</td>
-                    <td>{{ o.pay_amount }} {{ o.currency || 'CNY' }}</td>
-                    <td>
+                    <td data-label="充值额度">{{ money(o.amount) }}</td>
+                    <td data-label="实付">
+                      {{ o.pay_amount }} {{ o.currency || 'CNY' }}
+                    </td>
+                    <td data-label="状态">
                       <span
                         class="oc-tag"
                         :class="{ amber: o.status === 'PENDING' }"
                         >{{ statusName(o.status) }}</span
                       >
                     </td>
-                    <td>{{ date(o.created_at) }}</td>
+                    <td data-label="创建时间">{{ date(o.created_at) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -987,7 +1074,8 @@ function logout(){auth.logout();void router.push('/home')}
             </div></template
           >
           <template v-if="page === '/help'"
-            ><section id="cc-switch" class="oc-panel oc-faq">
+            ><HelpGuide />
+            <section id="cc-switch" class="oc-panel oc-faq">
               <span class="oc-eyebrow">CC SWITCH</span>
               <h2>用 CC Switch 接入 Claude Code</h2>
               <p>CC Switch 可以管理 Claude Code 的接口配置。完成下面的设置后，Claude Code 使用你的 OpenCC 密钥调用模型，费用从本站余额扣除。</p>
@@ -1182,11 +1270,11 @@ function logout(){auth.logout();void router.push('/home')}
         <form @submit.prevent="createKey">
           <label class="oc-field"
             >密钥名称<input
+              ref="keyNameInput"
               v-model="keyName"
               required
               maxlength="100"
-              placeholder="例如：我的研究助手"
-              autofocus /></label
+              placeholder="例如：我的研究助手" /></label
           ><label class="oc-field"
             >模型分组<select v-model="keyGroup" required>
               <option :value="undefined" disabled>请选择分组</option>
