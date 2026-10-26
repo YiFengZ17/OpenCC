@@ -6,7 +6,6 @@ import {
   type PlazaModel
 } from '@/api/modelPlaza'
 import { pointPrice, priceRate, intervalPrice } from './pricing'
-import snapshot from './upstream-pricing.json'
 const groups = ref<ModelPlazaGroup[]>([]),
   source = ref(''),
   query = ref(''),
@@ -32,23 +31,18 @@ const price = (
   v: number | null | undefined,
   unit = 1_000_000
 ) => fmt(pointPrice(v, priceRate(g, m), unit))
+// Only site-configured prices are shown. The upstream price list is a purchase
+// cost and must never reach users, otherwise the markup is exposed.
 async function load() {
   loading.value = true
   error.value = ''
   try {
     const d = await modelPlazaAPI.getModelPlaza()
-    if (d.groups.length) {
-      groups.value = d.groups
-      source.value = '本站配置'
-    } else {
-      groups.value = snapshot.data.groups as unknown as ModelPlazaGroup[]
-      source.value = `上游公开价格快照 · ${snapshot.fetched_at}`
-    }
+    groups.value = d.groups
+    source.value = '本站配置'
   } catch {
-    error.value =
-      '无法读取本站价格。以下为上游公开价格快照，尚未确认本站渠道是否可用。'
-    groups.value = snapshot.data.groups as unknown as ModelPlazaGroup[]
-    source.value = `上游公开价格快照 · ${snapshot.fetched_at}`
+    error.value = '无法读取本站价格，请稍后重试。'
+    groups.value = []
   } finally {
     loading.value = false
   }
@@ -216,8 +210,8 @@ onMounted(load)
       </table>
     </div>
   </section>
-  <div v-if="!visible.length && !loading" class="oc-empty">
-    没有匹配的模型。
+  <div v-if="!visible.length && !loading && !error" class="oc-empty">
+    {{ groups.length ? '没有匹配的模型。' : '管理员尚未配置模型价格。' }}
   </div>
 </template>
 <style scoped>

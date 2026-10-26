@@ -7,8 +7,7 @@ import {
 } from './vendor/modeltrace/fingerprint-core.js'
 import bankData from './vendor/modeltrace/unified_bank.json'
 import { pointPrice, priceRate } from './pricing'
-import snapshot from './upstream-pricing.json'
-import type { ModelPlazaGroup } from '@/api/modelPlaza'
+import type { ModelPlazaGroup, PlazaModel } from '@/api/modelPlaza'
 const sequence = Array.from({ length: 310 }, (_, i) => (i % 355) + 1).join(',')
 describe('ModelTrace integration', () => {
   it('keeps unknown models and partial samples out of positive conclusions', () => {
@@ -140,15 +139,22 @@ describe('temporary points pricing', () => {
     expect(pointPrice(null, 0.15)).toBeNull()
     expect(pointPrice(0.04, 1, 1)).toBe(0.04)
   })
-  it('retains every upstream group multiplier and media override', () => {
-    for (const g of snapshot.data.groups as unknown as ModelPlazaGroup[]) {
-      for (const m of g.models) {
-        const expected =
-          m.pricing?.billing_mode === 'image' && g.image_rate_independent
-            ? g.image_rate_multiplier
-            : g.rate_multiplier
-        expect(priceRate(g, m)).toBe(expected)
-      }
-    }
+  it('applies user override, then media-specific multipliers', () => {
+    const group = {
+      rate_multiplier: 0.15,
+      user_rate_multiplier: 0.2,
+      image_rate_independent: true,
+      image_rate_multiplier: 1.5,
+      video_rate_independent: false,
+      video_rate_multiplier: 3
+    } as unknown as ModelPlazaGroup
+    const model = (billing_mode: string) =>
+      ({ name: 'm', pricing: { billing_mode } }) as unknown as PlazaModel
+    expect(priceRate(group, model('token'))).toBe(0.2)
+    expect(priceRate(group, model('image'))).toBe(1.5)
+    expect(priceRate(group, model('video'))).toBe(0.2)
+    expect(
+      priceRate({ ...group, user_rate_multiplier: undefined }, model('token'))
+    ).toBe(0.15)
   })
 })

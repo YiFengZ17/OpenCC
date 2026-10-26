@@ -13,15 +13,12 @@ import { useRoutePrefetch } from '@/composables/useRoutePrefetch'
 import { getSetupStatus } from '@/api/setup'
 import { resolveCompletedSetupRedirectPath } from './setupRedirect'
 import { resolveRouteDocumentTitle } from './title'
+import { applyOpenCCRoutes } from '@/opencc/routes'
 
 /**
  * Route definitions with lazy loading
  */
 const routes: RouteRecordRaw[] = [
-  { path:'/help', name:'OpenCCHelp', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:false,title:'接入文档'} },
-  { path:'/announcements', name:'OpenCCAnnouncements', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:true,title:'站内公告'} },
-  { path:'/model-test', name:'OpenCCTrace', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:true,title:'模型检测'} },
-  { path:'/pricing', name:'OpenCCPricing', component:()=>import('@/opencc/WorkspaceView.vue'), meta:{requiresAuth:false,title:'模型计费规则'} },
   // ==================== Setup Routes ====================
   {
     path: '/setup',
@@ -37,10 +34,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/home',
     name: 'Home',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/HomeView.vue'),
     meta: {
       requiresAuth: false,
-      title: '首页'
+      title: 'Home'
     }
   },
   {
@@ -182,10 +179,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/model-plaza',
     name: 'ModelPlaza',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/ModelPlazaView.vue'),
     meta: {
       requiresAuth: false,
-      title: '模型广场',
+      title: 'Model Plaza',
+      titleKey: 'modelPlaza.title'
     }
   },
 
@@ -197,22 +195,24 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/user/DashboardView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: '账户工作台',
+      title: 'Dashboard',
+      titleKey: 'dashboard.title',
       descriptionKey: 'dashboard.welcomeMessage'
     }
   },
   {
     path: '/keys',
     name: 'Keys',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/user/KeysView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: 'API 密钥',
+      title: 'API Keys',
+      titleKey: 'keys.title',
       descriptionKey: 'keys.description'
     }
   },
@@ -232,22 +232,24 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/usage',
     name: 'Usage',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/user/UsageView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: '用量明细',
+      title: 'Usage Records',
+      titleKey: 'usage.title',
       descriptionKey: 'usage.description'
     }
   },
   {
     path: '/redeem',
     name: 'Redeem',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/user/RedeemView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: '账户充值',
+      title: 'Redeem Code',
+      titleKey: 'redeem.title',
       descriptionKey: 'redeem.description'
     }
   },
@@ -316,11 +318,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/orders',
     name: 'OrderList',
-    component: () => import('@/opencc/WorkspaceView.vue'),
+    component: () => import('@/views/user/UserOrdersView.vue'),
     meta: {
       requiresAuth: true,
       requiresAdmin: false,
-      title: '兑换记录',
+      title: 'My Orders',
+      titleKey: 'nav.myOrders',
+      requiresPayment: true
     }
   },
   {
@@ -728,7 +732,7 @@ const routes: RouteRecordRaw[] = [
  */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
+  routes: applyOpenCCRoutes(routes),
   scrollBehavior(_to, _from, savedPosition) {
     // Scroll to saved position when using browser back/forward
     if (savedPosition) {

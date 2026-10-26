@@ -114,19 +114,26 @@
                   <span
                     class="text-green-600 dark:text-green-400"
                     :title="t('admin.dashboard.actual')"
-                    >${{ formatCost(stats.today_actual_cost) }}</span
+                    >¥{{ formatCost(stats.today_actual_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-orange-500 dark:text-orange-400"
                     :title="t('admin.dashboard.accountCost')"
-                    >${{ formatCost(stats.today_account_cost) }}</span
+                    >¥{{ formatCost(stats.today_account_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-gray-400 dark:text-gray-500"
                     :title="t('admin.dashboard.standard')"
-                    >${{ formatCost(stats.today_cost) }}</span
+                    >¥{{ formatCost(stats.today_cost) }}</span
+                  >
+                </p>
+                <p class="text-xs" title="用户实扣 − 上游成本">
+                  <span class="text-gray-500 dark:text-gray-400">毛利 </span>
+                  <span
+                    :class="grossProfit(stats.today_actual_cost, stats.today_account_cost) < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'"
+                    >¥{{ formatCost(grossProfit(stats.today_actual_cost, stats.today_account_cost)) }}</span
                   >
                 </p>
               </div>
@@ -150,19 +157,26 @@
                   <span
                     class="text-green-600 dark:text-green-400"
                     :title="t('admin.dashboard.actual')"
-                    >${{ formatCost(stats.total_actual_cost) }}</span
+                    >¥{{ formatCost(stats.total_actual_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-orange-500 dark:text-orange-400"
                     :title="t('admin.dashboard.accountCost')"
-                    >${{ formatCost(stats.total_account_cost) }}</span
+                    >¥{{ formatCost(stats.total_account_cost) }}</span
                   >
                   <span class="text-gray-400 dark:text-gray-500"> / </span>
                   <span
                     class="text-gray-400 dark:text-gray-500"
                     :title="t('admin.dashboard.standard')"
-                    >${{ formatCost(stats.total_cost) }}</span
+                    >¥{{ formatCost(stats.total_cost) }}</span
+                  >
+                </p>
+                <p class="text-xs" title="用户实扣 − 上游成本">
+                  <span class="text-gray-500 dark:text-gray-400">毛利 </span>
+                  <span
+                    :class="grossProfit(stats.total_actual_cost, stats.total_account_cost) < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'"
+                    >¥{{ formatCost(grossProfit(stats.total_actual_cost, stats.total_account_cost)) }}</span
                   >
                 </p>
               </div>
@@ -580,7 +594,7 @@ const userTrendChartData = computed(() => {
 
 // Format helpers
 const formatUserTrendValue = (value: number): string =>
-  userTrendMetric.value === 'tokens' ? formatTokens(value) : `$${formatCost(value)}`
+  userTrendMetric.value === 'tokens' ? formatTokens(value) : `¥${formatCost(value)}`
 
 const formatTokens = (value: number | undefined): string => {
   if (value === undefined || value === null) return '0'
@@ -603,8 +617,15 @@ const formatNumber = (value: number | null | undefined): string => {
   return toFiniteNumber(value).toLocaleString()
 }
 
+// OpenCC: margin between what users are charged and what the upstream accounts cost.
+const grossProfit = (actual: number | null | undefined, account: number | null | undefined): number =>
+  toFiniteNumber(actual) - toFiniteNumber(account)
+
 const formatCost = (value: number | null | undefined): string => {
   const safeValue = toFiniteNumber(value)
+  if (safeValue < 0) {
+    return '-' + formatCost(-safeValue)
+  }
   if (safeValue >= 1000) {
     return (safeValue / 1000).toFixed(2) + 'K'
   } else if (safeValue >= 1) {

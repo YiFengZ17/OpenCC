@@ -164,6 +164,7 @@ issues/
 
 # OpenCC deployment secrets and generated TS configuration outputs
 deploy/.env.opencc
+deploy/backups/
 frontend/opencc-demo.js
 frontend/opencc-demo.d.ts
 
