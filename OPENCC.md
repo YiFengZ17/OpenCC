@@ -18,6 +18,8 @@
 6. opencc-docs/06-模型检测与积分计费.md：ModelTrace 与计价单位细节。
 7. opencc-docs/07-验收记录.md、09-前端更新验收.md：已验证与未验证项。
 
+计费自测：`tools/opencc-billing-selftest/run-local.sh`（本地临时环境 + 模拟上游，10 项检查）。
+
 早期规划文档（01–03 及实施计划）不在本仓库中。
 
 ## 当前设计基线
