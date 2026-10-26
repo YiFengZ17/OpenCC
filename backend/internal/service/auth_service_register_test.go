@@ -306,6 +306,16 @@ func TestAuthService_Register_SnapshotsPlatformQuotaDefaults(t *testing.T) {
 	require.InDelta(t, 12.34, *openaiRecord.WeeklyLimitUSD, 0.0001)
 }
 
+func TestAuthService_Register_PreservesOpenCCUsername(t *testing.T) {
+	repo := &userRepoStub{nextID: 79}
+	svc := newAuthService(repo, map[string]string{SettingKeyRegistrationEnabled: "true"}, nil, &userPlatformQuotaRepoStub{})
+	_, user, err := svc.RegisterWithVerification(context.Background(), "opencc@test.com", "password", "", "", "", "", "  小林  ")
+	require.NoError(t, err)
+	require.Equal(t, "小林", user.Username)
+	require.Equal(t, "opencc@test.com", user.Email)
+	require.NotEqual(t, "password", user.PasswordHash)
+}
+
 func TestAuthService_Register_NoDefaultQuotasSkipsSnapshot(t *testing.T) {
 	repo := &userRepoStub{nextID: 78}
 	quotaRepo := &userPlatformQuotaRepoStub{}

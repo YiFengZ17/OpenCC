@@ -49,17 +49,18 @@ onBeforeUnmount(() => {
 .oc-region {
   position: relative;
   z-index: 80;
-  background: #fff4de;
-  border-bottom: 1px solid #ecd7aa;
-  color: #66501c;
-  padding: 15px 24px;
-  font-size: 13px;
-  line-height: 1.9;
+  background: var(--oc-warn-bg, #fff4de);
+  border-bottom: 1px solid var(--oc-warn-line, #ecd7aa);
+  border-left: 4px solid var(--oc-warn-ink, #66501c);
+  color: var(--oc-warn-ink, #66501c);
+  padding: 14px 24px;
+  font-size: 14px;
+  line-height: 1.8;
 }
 .oc-region strong {
   display: block;
   font-weight: 700;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 .oc-region p {
   max-width: 1280px;

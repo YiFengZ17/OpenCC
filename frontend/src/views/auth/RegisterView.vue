@@ -28,6 +28,11 @@
 
       <!-- Registration Form -->
       <form v-else @submit.prevent="handleRegister" class="space-y-5">
+        <div>
+          <label for="username" class="input-label">用户名</label>
+          <input id="username" v-model="formData.username" class="input" autocomplete="nickname" required minlength="2" maxlength="32" placeholder="设置你的用户名" :disabled="registrationActionDisabled" />
+          <p class="input-hint">2–32 个字符，用于账户显示；使用邮箱登录。</p>
+        </div>
         <!-- Email Input -->
         <div>
           <label for="email" class="input-label">
@@ -368,7 +373,7 @@
 import { computed, ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { AuthLayout } from '@/components/layout'
+import AuthLayout from '@/opencc/AuthShell.vue'
 import LinuxDoOAuthSection from '@/components/auth/LinuxDoOAuthSection.vue'
 import OidcOAuthSection from '@/components/auth/OidcOAuthSection.vue'
 import WechatOAuthSection from '@/components/auth/WechatOAuthSection.vue'
@@ -499,6 +504,7 @@ const invitationValidation = reactive({
 let invitationValidateTimeout: ReturnType<typeof setTimeout> | null = null
 
 const formData = reactive({
+  username: '',
   email: '',
   password: '',
   promo_code: '',
@@ -940,6 +946,10 @@ function validateForm(): boolean {
     return false
   }
 
+  if (formData.username.trim().length < 2 || formData.username.trim().length > 32) {
+    appStore.showError("用户名需为 2–32 个字符")
+    return false
+  }
   // Email validation
   if (!formData.email.trim()) {
     errors.email = t('auth.emailRequired')
@@ -1058,7 +1068,8 @@ async function handleRegister(): Promise<void> {
       sessionStorage.setItem(
         'register_data',
         JSON.stringify({
-          email: formData.email,
+          username: formData.username.trim(),
+      email: formData.email,
           password: formData.password,
           turnstile_token:
             turnstileEnabled.value || aliyunCaptchaEnabled.value ? turnstileToken.value : undefined,
@@ -1077,6 +1088,7 @@ async function handleRegister(): Promise<void> {
 
     // Otherwise, directly register
     await authStore.register({
+      username: formData.username.trim(),
       email: formData.email,
       password: formData.password,
       turnstile_token:

@@ -6,7 +6,7 @@ const notice =
 const settings = {
   site_name: 'OpenCC',
   site_logo: '/logo.svg',
-  site_subtitle: '让想法，开始运行。',
+  site_subtitle: '模型 API 工作空间',
   registration_enabled: true,
   email_verify_enabled: false,
   model_plaza_enabled: true,
@@ -29,11 +29,7 @@ export function openccDemo(): Plugin {
     concurrency: 5,
     created_at: '2026-10-23T01:00:00Z'
   }
-  const groups = [
-    { id: 1, name: 'Claude · 标准通道', platform: 'anthropic' },
-    { id: 2, name: 'GPT · 标准通道', platform: 'openai' },
-    { id: 3, name: 'Grok · 标准通道', platform: 'grok' }
-  ]
+  const groups = [{"id": 1, "name": "claude 满血kiro 纯满血", "platform": "anthropic", "rate_multiplier": 0.8}, {"id": 2, "name": "ChatGPT-Pro【稳定】", "platform": "openai", "rate_multiplier": 0.22}, {"id": 3, "name": "ChatGPT-Pro【企业】", "platform": "openai", "rate_multiplier": 0.25}, {"id": 4, "name": "ChatGPT-ProMax【企业】", "platform": "openai", "rate_multiplier": 0.36}, {"id": 5, "name": "grok", "platform": "grok", "rate_multiplier": 0.15}]
   let keys = [
     {
       id: 1,
@@ -113,7 +109,7 @@ export function openccDemo(): Plugin {
     transformIndexHtml(html) {
       return html.replace(
         '</head>',
-        `<script>window.__APP_CONFIG__=${JSON.stringify(settings)};localStorage.setItem('auth_token','opencc-local-demo-only');localStorage.setItem('auth_user',${JSON.stringify(JSON.stringify(user))});</script></head>`
+        `<script>window.__APP_CONFIG__=${JSON.stringify(settings)};if(!['/login','/register'].includes(location.pathname)){localStorage.setItem('auth_token','opencc-local-demo-only');localStorage.setItem('auth_user',${JSON.stringify(JSON.stringify(user))});}else{localStorage.removeItem('auth_token');localStorage.removeItem('auth_user');}</script></head>`
       )
     },
     configureServer(server) {

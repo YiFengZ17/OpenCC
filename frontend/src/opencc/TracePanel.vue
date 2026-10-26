@@ -421,122 +421,162 @@ function switchMode(value:boolean){manual.value=value;error.value='';resetChalle
 <style scoped>
 .oc-trace-intro p {
   margin: 8px 0;
+  line-height: 1.8;
 }
 .oc-trace-intro a {
-  font-size: 11px;
+  font-size: 13.5px;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .oc-trace-modes {
-  margin: 20px 0;
+  margin: 4px 0 20px;
 }
-.oc-consent {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  font-size: 11px;
+.oc-trace-notes h2 {
+  margin-bottom: 10px;
+}
+.oc-trace-notes h2:not(:first-child) {
+  margin-top: 24px;
+}
+.oc-trace-notes p {
+  font-size: 14px;
   line-height: 1.8;
-  color: #819486;
-  margin: 22px 0;
+  color: var(--oc-ink-2);
+  margin-top: 8px;
 }
-.oc-consent input {
-  margin-top: 5px;
+.oc-trace-notes ol,
+.oc-trace-notes ul {
+  padding-left: 20px;
+  color: var(--oc-ink-2);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.oc-trace-notes ol {
+  list-style: decimal;
 }
 .oc-trace-notes ul {
-  padding-left: 18px;
   list-style: disc;
-  color: #7b9283;
-  font-size: 12px;
-  line-height: 2;
 }
 .oc-trace-notes li {
-  margin-top: 14px;
+  margin-top: 8px;
+}
+.oc-trace-notes ::marker {
+  color: var(--oc-brand);
 }
 .oc-trace-notes details {
-  font-size: 11px;
-  margin: 24px 0;
-  color: #708c79;
+  font-size: 14px;
+  margin: 20px 0;
+  color: var(--oc-ink-2);
+}
+.oc-trace-notes summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--oc-brand-ink);
 }
 .oc-trace-notes > small {
-  font-size: 9px;
-  color: #a3b1a7;
+  font-size: 12px;
+  color: var(--oc-muted);
 }
 .oc-bank-list {
   white-space: pre-line;
-  font: 11px/1.9 monospace;
-  margin-top: 15px;
+  font: 12.5px/1.9 var(--oc-mono);
+  margin-top: 12px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 12px 14px;
+  background: var(--oc-surface-2);
+  border: 1px solid var(--oc-line);
+  border-radius: 10px;
 }
 .oc-trace-verdict {
-  padding: 16px;
-  background: #f0f5f1;
-  border-radius: 8px;
-  font-size: 15px;
+  padding: 16px 18px;
+  background: var(--oc-brand-soft);
+  border: 1px solid var(--oc-brand-line);
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--oc-ink);
+  line-height: 1.7;
 }
 .oc-trace-summary {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  gap: 20px;
-  margin: 25px 0;
+  gap: 16px;
+  margin: 22px 0;
+}
+.oc-trace-summary > div {
+  padding: 14px 16px;
+  background: var(--oc-surface-2);
+  border: 1px solid var(--oc-line);
+  border-radius: 12px;
+  min-width: 0;
 }
 .oc-trace-summary small {
   display: block;
-  font-size: 10px;
-  color: #8da093;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--oc-muted);
 }
 .oc-trace-summary strong {
   display: block;
   overflow-wrap: anywhere;
   font-size: 20px;
-  margin-top: 10px;
-  font-weight: 600;
+  margin-top: 6px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 .oc-probe-row {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: center;
   flex-wrap: wrap;
-  padding: 18px 0;
-  border-bottom: 1px solid #e6eee7;
-  font-size: 11px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--oc-line);
+  font-size: 14px;
+}
+.oc-probe-row:last-child {
+  border-bottom: 0;
 }
 .oc-probe-row code {
-  font-size: 10px;
-  color: #8da093;
+  font-size: 12.5px;
+  color: var(--oc-muted);
 }
 .oc-probe-row small {
   margin-left: auto;
-}
-.oc-manual-probe {
-  padding: 25px 0;
-  border-bottom: 1px solid #e6eee7;
-  margin-bottom: 20px;
-}
-.oc-manual-probe h3 {
+  color: var(--oc-muted);
   font-size: 13px;
 }
+.oc-manual-probe {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--oc-line);
+  margin-bottom: 18px;
+}
+.oc-manual-probe h3 {
+  font-size: 15px;
+}
 .oc-manual-probe p {
-  font-size: 11px;
-  line-height: 1.9;
-  color: #829487;
-  margin: 15px 0;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--oc-ink-2);
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: var(--oc-surface-2);
+  border: 1px solid var(--oc-line);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
 }
 .oc-manual-probe .oc-field {
-  margin-top: 20px;
+  margin-top: 16px;
 }
-.oc-field textarea {
-  border: 1px solid #dfe8e0;
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 12px;
-  background: #fbfdfb;
-  resize: vertical;
-  color: #416348;
-}
-@media (max-width: 600px) {
+@media (max-width: 720px) {
   .oc-trace-summary {
     grid-template-columns: 1fr;
   }
   .oc-trace-summary strong {
     font-size: 18px;
+  }
+  .oc-probe-row small {
+    margin-left: 0;
   }
 }
 </style>

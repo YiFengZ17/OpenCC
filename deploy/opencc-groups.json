@@ -1,0 +1,120 @@
+{
+  "source": "https://console.supergpt.dev/api/v1/model-plaza",
+  "checked_at": "2026-10-24",
+  "currency": "CNY",
+  "groups": [
+    {
+      "upstream_id": 22,
+      "name": "claude 满血kiro 纯满血",
+      "platform": "anthropic",
+      "rate_multiplier": 0.8,
+      "credit_billing": {
+        "enabled": true,
+        "unit_price": 0.095,
+        "started_at": "2026-10-11T18:26:36.746956376Z"
+      },
+      "models": [
+        "claude-haiku-4-5",
+        "claude-haiku-4-5-20251001",
+        "claude-opus-4-5",
+        "claude-opus-4-5-20251101",
+        "claude-opus-4-6",
+        "claude-opus-4-7",
+        "claude-opus-4-8",
+        "claude-opus-5",
+        "claude-opus-5-5",
+        "claude-sonnet-4",
+        "claude-sonnet-4-0",
+        "claude-sonnet-4-20250514",
+        "claude-sonnet-4-5",
+        "claude-sonnet-4-5-20250929",
+        "claude-sonnet-4-6",
+        "claude-sonnet-5",
+        "claude-sonnet-5-5",
+        "claude-sonnet-5.5"
+      ],
+      "status": "pending_configuration"
+    },
+    {
+      "upstream_id": 6,
+      "name": "ChatGPT-Pro【稳定】",
+      "platform": "openai",
+      "rate_multiplier": 0.22,
+      "credit_billing": null,
+      "models": [
+        "codex-auto-review",
+        "gpt-5.5",
+        "gpt-5.6-sol",
+        "gpt-5.6-terra",
+        "gpt-6-astra",
+        "gpt-6-sol",
+        "gpt-6.1-sol",
+        "gpt-image-1",
+        "gpt-image-1.5",
+        "gpt-image-2",
+        "gpt-image-2.5-flare",
+        "gpt-image-2.5-sunburst"
+      ],
+      "status": "pending_configuration"
+    },
+    {
+      "upstream_id": 7,
+      "name": "ChatGPT-Pro【企业】",
+      "platform": "openai",
+      "rate_multiplier": 0.25,
+      "credit_billing": null,
+      "models": [
+        "codex-auto-review",
+        "gpt-5.5",
+        "gpt-5.6-sol",
+        "gpt-5.6-terra",
+        "gpt-6-astra",
+        "gpt-6-sol",
+        "gpt-6.1-sol",
+        "gpt-image-1",
+        "gpt-image-1.5",
+        "gpt-image-2",
+        "gpt-image-2.5-flare",
+        "gpt-image-2.5-sunburst",
+        "gpt-reserve"
+      ],
+      "status": "pending_configuration"
+    },
+    {
+      "upstream_id": 8,
+      "name": "ChatGPT-ProMax【企业】",
+      "platform": "openai",
+      "rate_multiplier": 0.36,
+      "credit_billing": null,
+      "models": [
+        "codex-auto-review",
+        "gpt-5.5",
+        "gpt-5.6-sol",
+        "gpt-5.6-terra",
+        "gpt-6-astra",
+        "gpt-6-sol",
+        "gpt-6.1-sol",
+        "gpt-image-1",
+        "gpt-image-1.5",
+        "gpt-image-2",
+        "gpt-image-2.5-flare",
+        "gpt-image-2.5-sunburst"
+      ],
+      "status": "pending_configuration"
+    },
+    {
+      "upstream_id": 14,
+      "name": "grok",
+      "platform": "grok",
+      "rate_multiplier": 0.15,
+      "credit_billing": null,
+      "models": [
+        "grok-4.5",
+        "grok-4.6",
+        "grok-4.7",
+        "grok-4.7-build-fast"
+      ],
+      "status": "pending_configuration"
+    }
+  ]
+}

@@ -160,7 +160,7 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (str
 }
 
 // RegisterWithVerification 用户注册（支持邮件验证、优惠码、邀请码和邀请返利码），返回token和用户。
-func (s *AuthService) RegisterWithVerification(ctx context.Context, email, password, verifyCode, promoCode, invitationCode, affiliateCode string) (string, *User, error) {
+func (s *AuthService) RegisterWithVerification(ctx context.Context, email, password, verifyCode, promoCode, invitationCode, affiliateCode string, usernames ...string) (string, *User, error) {
 	// 检查是否开放注册（默认关闭：settingService 未配置时不允许注册）
 	if s.settingService == nil || !s.settingService.IsRegistrationEnabled(ctx) {
 		return "", nil, ErrRegDisabled
@@ -234,8 +234,13 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 		defaultRPMLimit = s.settingService.GetDefaultUserRPMLimit(ctx)
 	}
 
+	username := ""
+	if len(usernames) > 0 {
+		username = strings.TrimSpace(usernames[0])
+	}
 	// 创建用户
 	user := &User{
+		Username:     username,
 		Email:        email,
 		PasswordHash: hashedPassword,
 		Role:         RoleUser,

@@ -78,15 +78,19 @@ onMounted(load)
   <section v-for="g in visible" :key="g.id" class="oc-panel oc-price-group">
     <div class="oc-panel-head">
       <h2>{{ g.name }}</h2>
-      <span class="oc-tag"
+      <span v-if="!g.credit_billing?.enabled" class="oc-tag"
         >倍率 {{ g.user_rate_multiplier ?? g.rate_multiplier }}×</span
       >
     </div>
-    <p v-if="g.peak_rate_enabled" class="oc-hint">
+    <div v-if="g.credit_billing?.enabled" class="oc-info">
+      <strong>本站 Token 单价待公布</strong>
+      <p>本站将按输入、输出、缓存读取及缓存写入用量分别计费，单位为 ¥ / 1M Tokens。此上游目录尚无本站可用的 Token 报价。</p>
+    </div>
+    <p v-if="!g.credit_billing?.enabled && g.peak_rate_enabled" class="oc-hint">
       高峰 {{ g.peak_start }}–{{ g.peak_end }}，另乘
       {{ g.peak_rate_multiplier }}×。
     </p>
-    <div class="oc-table-wrap">
+    <div v-if="!g.credit_billing?.enabled" class="oc-table-wrap">
       <table>
         <thead>
           <tr>
@@ -222,33 +226,38 @@ onMounted(load)
 </template>
 <style scoped>
 .oc-info p {
-  margin: 9px 0;
+  margin: 8px 0;
 }
 .oc-info small {
-  font-size: 10px;
+  font-size: 12.5px;
+  color: var(--oc-muted);
 }
 .oc-price-group {
   padding: 0;
   overflow: hidden;
 }
 .oc-price-group > .oc-panel-head {
-  padding: 22px 24px 0;
+  padding: 20px 24px 0;
 }
 .oc-price-group > .oc-hint {
-  padding: 0 24px 15px;
+  padding: 0 24px 14px;
+  margin-top: 0 !important;
 }
 .oc-price-rules {
   white-space: normal !important;
-  background: #fafcf9;
+  background: var(--oc-surface-2);
 }
 .oc-price-rules details {
-  font-size: 10px;
-  color: #789281;
+  font-size: 13px;
+  color: var(--oc-ink-2);
 }
 .oc-price-rules p {
-  margin: 10px 0;
+  margin: 8px 0;
+  line-height: 1.7;
 }
 .oc-price-rules summary {
   cursor: pointer;
+  font-weight: 600;
+  color: var(--oc-brand-ink);
 }
 </style>
