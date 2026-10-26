@@ -38,7 +38,7 @@ def upstream():
     return base, key
 
 
-def http_json(method, url, key=None, body=None, timeout=120):
+def http_json(method, url, key=None, body=None, timeout=120, with_headers=False):
     req = urllib.request.Request(url, method=method,
                                  data=None if body is None else json.dumps(body).encode())
     req.add_header("Content-Type", "application/json")
@@ -48,18 +48,31 @@ def http_json(method, url, key=None, body=None, timeout=120):
         req.add_header("anthropic-version", "2023-06-01")
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            return json.loads(r.read())
+            data = json.loads(r.read())
+            return (data, dict(r.headers)) if with_headers else data
     except urllib.error.HTTPError as e:
         sys.exit(f"{method} {url} -> HTTP {e.code}: {e.read()[:300]!r}")
 
 
-def balance():
+def usage_snapshot():
+    """Balance plus the upstream's own cumulative records for this key, when present."""
     base, key = upstream()
     data = http_json("GET", base + "/v1/usage", key)
     value = data.get("balance", data.get("remaining"))
     if not isinstance(value, (int, float)):
         sys.exit(f"Upstream /v1/usage has no numeric balance: {str(data)[:300]}")
-    return float(value)
+    total = (data.get("usage") or {}).get("total") or {}
+    return {"balance": float(value), "cost": total.get("cost"), "actual_cost": total.get("actual_cost")}
+
+
+def balance():
+    return usage_snapshot()["balance"]
+
+
+# Response headers worth showing: anything that might carry billing information.
+BORING_HEADERS = {"date", "content-type", "content-length", "connection", "server", "vary",
+                  "set-cookie", "cache-control", "transfer-encoding", "strict-transport-security",
+                  "alt-svc", "cf-cache-status", "nel", "report-to", "x-content-type-options"}
 
 
 def wait_for_drop(before, timeout=45):
@@ -102,15 +115,23 @@ def cmd_measure(args):
     prices = load_prices(args.prices)
     shapes = {"short": "Reply with the single word OK.", "long": FILLER + "\nReply with the single word OK."}
     rows = []
+    start = usage_snapshot()
+    shown_headers = False
     for model in args.model:
         if model not in prices:
             sys.exit(f"No token price for {model} in {args.prices}")
         for shape, text in shapes.items():
             for _ in range(args.repeat):
                 before = balance()
-                resp = http_json("POST", base + "/v1/messages", key, {
+                resp, headers = http_json("POST", base + "/v1/messages", key, {
                     "model": model, "max_tokens": 16,
-                    "messages": [{"role": "user", "content": text}]})
+                    "messages": [{"role": "user", "content": text}]}, with_headers=True)
+                if not shown_headers:
+                    shown_headers = True
+                    extra = {k: v for k, v in headers.items() if k.lower() not in BORING_HEADERS}
+                    print("Upstream response headers (look for cost/credit fields):")
+                    for k, v in sorted(extra.items()):
+                        print(f"    {k}: {v}")
                 after = wait_for_drop(before)
                 usage = resp.get("usage", {})
                 std = standard_cost(prices[model], usage)
@@ -119,6 +140,17 @@ def cmd_measure(args):
                 rows.append((model, shape, usage.get("input_tokens", 0), usage.get("output_tokens", 0), std, spent, u))
                 print(f"{model:<24} {shape:<5} in={usage.get('input_tokens', 0):>6} out={usage.get('output_tokens', 0):>4} "
                       f"standard=¥{std:.6f} upstream=¥{spent:.6f} U={u:.3f}")
+    time.sleep(5)
+    end = usage_snapshot()
+    ours = sum(r[4] for r in rows)
+    print(f"\nWhole run: our standard cost ¥{ours:.6f}, balance drop ¥{start['balance'] - end['balance']:.6f}")
+    if isinstance(start["cost"], (int, float)) and isinstance(end["cost"], (int, float)):
+        print(f"  upstream's own records: standard ¥{end['cost'] - start['cost']:.6f}, "
+              f"charged ¥{(end['actual_cost'] or 0) - (start['actual_cost'] or 0):.6f}")
+        print("  standard differs from ours -> fix channel base prices; charged differs from balance drop"
+              " -> extra credit fees not shown in the upstream's usage records.")
+    else:
+        print("  upstream /v1/usage has no usage records; only the balance is used.")
     print("\nPer model: upstream charge ≈ a × standard cost + b per request")
     for model in args.model:
         mine = [r for r in rows if r[0] == model]
