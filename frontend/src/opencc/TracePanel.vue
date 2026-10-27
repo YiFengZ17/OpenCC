@@ -423,7 +423,7 @@ function switchMode(value:boolean){manual.value=value;error.value='';resetChalle
 .oc-trace-hero {
   padding: 28px 30px;
   border-radius: var(--oc-radius);
-  background: var(--oc-hero-card);
+  background: var(--oc-hero-bg);
   color: var(--oc-hero-card-ink);
   margin-bottom: 20px;
 }

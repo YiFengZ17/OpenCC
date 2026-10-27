@@ -6,52 +6,63 @@
    ========================================================================== */
 
 :root {
-  --oc-bg: #f5f8f6;
+  --oc-bg: #f5f6fb;
   --oc-surface: #ffffff;
-  --oc-surface-2: #f0f5f2;
-  --oc-surface-3: #e8efeb;
-  --oc-ink: #11221b;
-  --oc-ink-2: #3a5246;
-  --oc-muted: #5b7064;
-  --oc-faint: #8a9b92;
-  --oc-line: #e1e8e4;
-  --oc-line-strong: #c9d6cf;
+  --oc-surface-2: #f0f2fa;
+  --oc-surface-3: #e6e9f5;
+  --oc-ink: #0f1430;
+  --oc-ink-2: #383f5e;
+  --oc-muted: #5b6384;
+  --oc-faint: #8a91ad;
+  --oc-line: #e2e5f0;
+  --oc-line-strong: #cbd0e3;
 
-  --oc-brand: #14694c;
-  --oc-brand-hover: #0e5239;
-  --oc-brand-ink: #0f6a4a;
-  --oc-brand-soft: #e5f4ec;
-  --oc-brand-line: #c4e3d3;
+  --oc-brand: #4f46e5;
+  --oc-brand-hover: #4338ca;
+  --oc-brand-ink: #4338ca;
+  --oc-brand-soft: #eef0ff;
+  --oc-brand-line: #d3d7fd;
   --oc-on-brand: #ffffff;
+  --oc-accent: #06b6d4;
+  --oc-accent-ink: #0e7490;
 
-  --oc-hero-card: #143a2c;
-  --oc-hero-card-ink: #e8f6ee;
-  --oc-hero-card-muted: #a7cdb7;
+  /* dark "glass" cards: hero, banners, balance */
+  --oc-hero-card: #0c1133;
+  --oc-hero-card-ink: #eef1ff;
+  --oc-hero-card-muted: #aab2d8;
+  --oc-hero-card-accent: #67e8f9;
+  --oc-hero-bg:
+    radial-gradient(120% 140% at 100% 0%, rgb(99 102 241 / 0.42), transparent 55%),
+    radial-gradient(90% 120% at 0% 100%, rgb(6 182 212 / 0.24), transparent 55%),
+    var(--oc-hero-card);
+  --oc-mark-bg: linear-gradient(145deg, #6366f1 0%, #312e81 70%, #1e1b4b 100%);
+  --oc-mark-ink: #e0e7ff;
+  --oc-overlay: rgb(9 12 30 / 0.55);
 
   --oc-warn-ink: #7a5712;
   --oc-warn-bg: #fdf5df;
   --oc-warn-line: #ecd9a4;
-  --oc-danger: #b0372b;
-  --oc-danger-bg: #fdeeeb;
-  --oc-danger-line: #f1c4bc;
+  --oc-danger: #b4233c;
+  --oc-danger-bg: #fdecef;
+  --oc-danger-line: #f4c2cc;
 
-  --oc-p0-bg: #fbeee6;
-  --oc-p0-ink: #b4572f;
-  --oc-p1-bg: #e5f4ec;
-  --oc-p1-ink: #14694c;
-  --oc-p2-bg: #eceef2;
-  --oc-p2-ink: #3b4350;
+  --oc-p0-bg: #fdeee6;
+  --oc-p0-ink: #b4502b;
+  --oc-p1-bg: #eef0ff;
+  --oc-p1-ink: #4338ca;
+  --oc-p2-bg: #eceef4;
+  --oc-p2-ink: #3b4256;
 
-  --oc-code-bg: #0f1d17;
-  --oc-code-ink: #c6e6d2;
-  --oc-code-muted: #7fa38d;
+  --oc-code-bg: #0b1026;
+  --oc-code-ink: #c7d2fe;
+  --oc-code-muted: #8590bd;
 
-  --oc-shadow-sm: 0 1px 2px rgb(17 34 27 / 0.05);
-  --oc-shadow-md: 0 6px 20px rgb(17 34 27 / 0.07);
-  --oc-shadow-lg: 0 24px 64px rgb(10 28 20 / 0.22);
+  --oc-shadow-sm: 0 1px 2px rgb(15 20 48 / 0.05);
+  --oc-shadow-md: 0 6px 20px rgb(15 20 48 / 0.08);
+  --oc-shadow-lg: 0 24px 64px rgb(12 17 51 / 0.24);
   --oc-radius: 14px;
   --oc-radius-sm: 9px;
-  --oc-ring: 0 0 0 3px rgb(20 105 76 / 0.28);
+  --oc-ring: 0 0 0 3px rgb(79 70 229 / 0.3);
 
   --oc-font:
     'Inter', 'Aptos', system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
@@ -66,92 +77,100 @@
 }
 
 :root[data-oc-theme='dark'] {
-  --oc-bg: #0b1310;
-  --oc-surface: #121c18;
-  --oc-surface-2: #182520;
-  --oc-surface-3: #20312a;
-  --oc-ink: #e9f2ed;
-  --oc-ink-2: #bacdc2;
-  --oc-muted: #8fa699;
-  --oc-faint: #62786b;
-  --oc-line: #22322b;
-  --oc-line-strong: #31453c;
+  --oc-bg: #080b19;
+  --oc-surface: #0e1326;
+  --oc-surface-2: #141a31;
+  --oc-surface-3: #1b223c;
+  --oc-ink: #e8ebff;
+  --oc-ink-2: #b7bedc;
+  --oc-muted: #8d95b7;
+  --oc-faint: #626a8c;
+  --oc-line: #1f2641;
+  --oc-line-strong: #2d3557;
 
-  --oc-brand: #36b786;
-  --oc-brand-hover: #4cc896;
-  --oc-brand-ink: #6fd4aa;
-  --oc-brand-soft: #14342a;
-  --oc-brand-line: #1f4a3a;
-  --oc-on-brand: #04140d;
+  --oc-brand: #818cf8;
+  --oc-brand-hover: #a5b4fc;
+  --oc-brand-ink: #a5b4fc;
+  --oc-brand-soft: #1b1f47;
+  --oc-brand-line: #2f3574;
+  --oc-on-brand: #0b0f2a;
+  --oc-accent: #22d3ee;
+  --oc-accent-ink: #67e8f9;
 
-  --oc-hero-card: #0f2d22;
-  --oc-hero-card-ink: #e8f6ee;
-  --oc-hero-card-muted: #8fc2a6;
+  --oc-hero-card: #0d1338;
+  --oc-hero-card-ink: #eef1ff;
+  --oc-hero-card-muted: #9ea7d6;
+  --oc-hero-card-accent: #67e8f9;
+  --oc-overlay: rgb(3 5 14 / 0.65);
 
   --oc-warn-ink: #e8c777;
   --oc-warn-bg: #2a2412;
   --oc-warn-line: #4a3f1b;
-  --oc-danger: #ff8d80;
-  --oc-danger-bg: #301816;
-  --oc-danger-line: #5c2b27;
+  --oc-danger: #ff8fa3;
+  --oc-danger-bg: #31141c;
+  --oc-danger-line: #5e2633;
 
   --oc-p0-bg: #33211a;
   --oc-p0-ink: #f0a07c;
-  --oc-p1-bg: #14342a;
-  --oc-p1-ink: #6fd4aa;
-  --oc-p2-bg: #232830;
-  --oc-p2-ink: #c3cad6;
+  --oc-p1-bg: #1b1f47;
+  --oc-p1-ink: #a5b4fc;
+  --oc-p2-bg: #1e2336;
+  --oc-p2-ink: #c3c9de;
 
-  --oc-code-bg: #08110d;
-  --oc-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
-  --oc-shadow-md: 0 6px 20px rgb(0 0 0 / 0.4);
+  --oc-code-bg: #060917;
+  --oc-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --oc-shadow-md: 0 6px 20px rgb(0 0 0 / 0.45);
   --oc-shadow-lg: 0 24px 64px rgb(0 0 0 / 0.6);
-  --oc-ring: 0 0 0 3px rgb(54 183 134 / 0.38);
+  --oc-ring: 0 0 0 3px rgb(129 140 248 / 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-oc-theme='light']) {
-    --oc-bg: #0b1310;
-    --oc-surface: #121c18;
-    --oc-surface-2: #182520;
-    --oc-surface-3: #20312a;
-    --oc-ink: #e9f2ed;
-    --oc-ink-2: #bacdc2;
-    --oc-muted: #8fa699;
-    --oc-faint: #62786b;
-    --oc-line: #22322b;
-    --oc-line-strong: #31453c;
+    --oc-bg: #080b19;
+    --oc-surface: #0e1326;
+    --oc-surface-2: #141a31;
+    --oc-surface-3: #1b223c;
+    --oc-ink: #e8ebff;
+    --oc-ink-2: #b7bedc;
+    --oc-muted: #8d95b7;
+    --oc-faint: #626a8c;
+    --oc-line: #1f2641;
+    --oc-line-strong: #2d3557;
 
-    --oc-brand: #36b786;
-    --oc-brand-hover: #4cc896;
-    --oc-brand-ink: #6fd4aa;
-    --oc-brand-soft: #14342a;
-    --oc-brand-line: #1f4a3a;
-    --oc-on-brand: #04140d;
+    --oc-brand: #818cf8;
+    --oc-brand-hover: #a5b4fc;
+    --oc-brand-ink: #a5b4fc;
+    --oc-brand-soft: #1b1f47;
+    --oc-brand-line: #2f3574;
+    --oc-on-brand: #0b0f2a;
+    --oc-accent: #22d3ee;
+    --oc-accent-ink: #67e8f9;
 
-    --oc-hero-card: #0f2d22;
-    --oc-hero-card-ink: #e8f6ee;
-    --oc-hero-card-muted: #8fc2a6;
+    --oc-hero-card: #0d1338;
+    --oc-hero-card-ink: #eef1ff;
+    --oc-hero-card-muted: #9ea7d6;
+    --oc-hero-card-accent: #67e8f9;
+    --oc-overlay: rgb(3 5 14 / 0.65);
 
     --oc-warn-ink: #e8c777;
     --oc-warn-bg: #2a2412;
     --oc-warn-line: #4a3f1b;
-    --oc-danger: #ff8d80;
-    --oc-danger-bg: #301816;
-    --oc-danger-line: #5c2b27;
+    --oc-danger: #ff8fa3;
+    --oc-danger-bg: #31141c;
+    --oc-danger-line: #5e2633;
 
     --oc-p0-bg: #33211a;
     --oc-p0-ink: #f0a07c;
-    --oc-p1-bg: #14342a;
-    --oc-p1-ink: #6fd4aa;
-    --oc-p2-bg: #232830;
-    --oc-p2-ink: #c3cad6;
+    --oc-p1-bg: #1b1f47;
+    --oc-p1-ink: #a5b4fc;
+    --oc-p2-bg: #1e2336;
+    --oc-p2-ink: #c3c9de;
 
-    --oc-code-bg: #08110d;
-    --oc-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
-    --oc-shadow-md: 0 6px 20px rgb(0 0 0 / 0.4);
+    --oc-code-bg: #060917;
+    --oc-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --oc-shadow-md: 0 6px 20px rgb(0 0 0 / 0.45);
     --oc-shadow-lg: 0 24px 64px rgb(0 0 0 / 0.6);
-    --oc-ring: 0 0 0 3px rgb(54 183 134 / 0.38);
+    --oc-ring: 0 0 0 3px rgb(129 140 248 / 0.4);
   }
 }
 
@@ -278,8 +297,8 @@
   font-family: var(--oc-mono);
   font-size: 15px;
   font-weight: 700;
-  background: linear-gradient(145deg, #1d5a44, #0f3326);
-  color: #c4f5da;
+  background: var(--oc-mark-bg);
+  color: var(--oc-mark-ink);
   display: grid;
   place-items: center;
   width: 40px;
@@ -289,7 +308,7 @@
   padding-right: 2px;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.12),
-    0 4px 10px rgb(15 51 38 / 0.25);
+    0 4px 12px rgb(49 46 129 / 0.35);
 }
 .oc-brand-sub {
   display: block;
@@ -683,7 +702,7 @@ a.oc-avatar:hover {
   margin: 20px 0 18px;
 }
 .oc-hero h1 span {
-  background: linear-gradient(95deg, var(--oc-brand), #4cc896);
+  background: linear-gradient(95deg, var(--oc-brand), var(--oc-accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -751,8 +770,8 @@ a.oc-avatar:hover {
   justify-content: center;
   font: 800 30px var(--oc-mono);
   letter-spacing: -3px;
-  color: #c4f5d9;
-  background: linear-gradient(150deg, #1d5a44, #0f3326);
+  color: var(--oc-mark-ink);
+  background: var(--oc-mark-bg);
   border-radius: 24px;
   transform: rotate(-8deg);
   box-shadow: var(--oc-shadow-lg);
@@ -912,7 +931,7 @@ a.oc-avatar:hover {
   margin: 28px 0 8px;
   padding: 28px 30px;
   border-radius: var(--oc-radius);
-  background: var(--oc-hero-card);
+  background: var(--oc-hero-bg);
   color: var(--oc-hero-card-ink);
 }
 .oc-verify-band .oc-eyebrow {
@@ -974,7 +993,7 @@ a.oc-avatar:hover {
   }
 }
 .oc-start-banner {
-  background: var(--oc-hero-card);
+  background: var(--oc-hero-bg);
   color: var(--oc-hero-card-ink);
   border-radius: 18px;
   display: flex;
@@ -987,7 +1006,7 @@ a.oc-avatar:hover {
   overflow: hidden;
 }
 .oc-start-banner .oc-eyebrow {
-  color: #8fe0b9;
+  color: var(--oc-hero-card-accent);
 }
 .oc-start-banner h2 {
   font-size: 22px;
@@ -999,13 +1018,13 @@ a.oc-avatar:hover {
   font-size: 14px;
 }
 .oc-start-banner .oc-button {
-  background: #e8f6ee;
-  color: #0e3626;
-  border-color: #e8f6ee;
+  background: var(--oc-hero-card-ink);
+  color: var(--oc-hero-card);
+  border-color: var(--oc-hero-card-ink);
 }
 .oc-start-banner .oc-button:hover {
   background: #fff;
-  color: #0e3626;
+  color: var(--oc-hero-card);
 }
 
 /* ---------- page heading / stats ---------- */
@@ -1095,16 +1114,16 @@ a.oc-avatar:hover {
   height: 14px;
 }
 .oc-stat.featured {
-  background: linear-gradient(150deg, #1a4d3a, #0f3023);
+  background: var(--oc-hero-bg);
   color: var(--oc-hero-card-ink);
   border-color: transparent;
 }
 .oc-stat.featured > span,
 .oc-stat.featured > a {
-  color: #a9d9be;
+  color: var(--oc-hero-card-muted);
 }
 .oc-stat.featured > span svg {
-  color: #7ee0b2;
+  color: var(--oc-hero-card-accent);
 }
 
 /* ---------- panels ---------- */
@@ -1570,13 +1589,13 @@ a.oc-avatar:hover {
   margin-top: 14px !important;
 }
 .oc-balance-panel {
-  background: linear-gradient(150deg, #1a4d3a, #0f3023);
+  background: var(--oc-hero-bg);
   color: var(--oc-hero-card-ink);
   border-color: transparent;
 }
 .oc-balance-panel > span {
   font-size: 14px;
-  color: #a9d9be;
+  color: var(--oc-hero-card-muted);
 }
 .oc-balance-panel strong {
   display: block;
@@ -1588,7 +1607,7 @@ a.oc-avatar:hover {
 }
 .oc-balance-panel p {
   font-size: 13.5px;
-  color: #8fc2a6;
+  color: var(--oc-hero-card-muted);
 }
 .oc-card-links {
   display: grid;
@@ -1739,7 +1758,7 @@ a.oc-avatar:hover {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  color: #a9d9be;
+  color: var(--oc-code-ink);
 }
 .oc-code-panel > div button:hover {
   background: rgb(255 255 255 / 0.08);
@@ -1901,7 +1920,7 @@ a.oc-avatar:hover {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgb(8 20 14 / 0.55);
+  background: var(--oc-overlay);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   display: grid;
@@ -2101,7 +2120,7 @@ a.oc-avatar:hover {
     position: fixed;
     inset: 0;
     z-index: 39;
-    background: rgb(8 20 14 / 0.5);
+    background: var(--oc-overlay);
     -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
   }

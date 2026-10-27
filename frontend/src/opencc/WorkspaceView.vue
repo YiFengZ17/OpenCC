@@ -631,7 +631,7 @@ function logout(){auth.logout();void router.push('/home')}
                 <span>可用余额 <Icon name="wallet" /></span
                 ><strong>{{ money(auth.user?.balance) }}</strong
                 ><RouterLink to="/redeem"
-                  >卡密充值 <Icon name="arrow"
+                  >账户充值 <Icon name="arrow"
                 /></RouterLink>
               </div>
               <div class="oc-stat">
