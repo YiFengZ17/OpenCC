@@ -59,16 +59,16 @@ const page = computed(() => route.path),
       (page.value === '/pricing' ? '模型价格' : 'OpenCC API')
   )
 const descriptions: Record<string, string> = {
-  '/dashboard': '查看余额、用量和密钥。',
-  '/model-plaza': '查看支持模型、分组与价格。',
-  '/keys': '创建和管理项目使用的 API 密钥。',
-  '/usage': '查看每条请求的模型、Token 和费用。',
-  '/redeem': '使用卡密充值到账户余额。',
-  '/orders': '查看卡密兑换记录和到账金额。',
+  '/dashboard': '余额、今天用了多少、最近的调用，都在这里。',
+  '/model-plaza': '能用哪些模型、在哪个分组、多少钱。',
+  '/keys': '每个项目一把密钥，用不着了随时停用。',
+  '/usage': '每一次调用扣了多少钱，都能在这里查到。',
+  '/redeem': '输入兑换码，余额马上到账。',
+  '/orders': '每一次充值的记录和到账金额。',
   '/announcements': '服务公告和维护通知。',
-  '/help': '接口地址、配置方法与调用示例。',
-  '/model-test': '选择 API 密钥与模型，查看指纹检测结果。',
-  '/pricing': '模型价格、计费单位和分组倍率。'
+  '/help': '从建密钥到发出第一个请求，跟着做就行。',
+  '/model-test': '用开源工具 ModelTrace，一分钟验证模型是不是真的。',
+  '/pricing': '每个模型多少钱，价格已包含分组倍率。'
 }
 const description = computed(() => descriptions[page.value] || '')
 const mobile = ref(false),
@@ -496,10 +496,9 @@ function logout(){auth.logout();void router.push('/home')}
           <section class="oc-hero">
             <div>
               <span class="oc-eyebrow"><i></i> OPENCC API</span>
-              <h1>OpenCC<br /><span>API 模型服务</span></h1>
+              <h1>OpenCC<br /><span>放心用的模型接口</span></h1>
               <p>
-                支持 Claude、GPT 与 Grok 模型。<br />创建 API
-                密钥后，可在兼容客户端中使用。
+                Claude、GPT、Grok，一把密钥接入常用客户端。<br />按实际用量扣费，每一笔都查得到；模型是不是真的，你可以自己测。
               </p>
               <div class="oc-hero-actions">
                 <RouterLink
@@ -511,9 +510,9 @@ function logout(){auth.logout();void router.push('/home')}
                 >
               </div>
               <div class="oc-hero-foot">
-                <span><Icon name="check" /> 按量计费</span
-                ><span><Icon name="check" /> API 密钥管理</span
-                ><span><Icon name="check" /> 用量明细</span>
+                <span><Icon name="check" /> 按量计费，没有月费</span
+                ><span><Icon name="check" /> 每笔调用可查</span
+                ><span><Icon name="check" /> 开源工具验真</span>
               </div>
             </div>
             <div class="oc-orbit" aria-hidden="true">
@@ -528,6 +527,31 @@ function logout(){auth.logout();void router.push('/home')}
               ><span class="oc-orbit-dot"></span
               ><code>API / Tokens / Usage</code>
             </div>
+          </section>
+          <section class="oc-verify-band">
+            <div class="oc-verify-copy">
+              <span class="oc-eyebrow">模型验真</span>
+              <h2>别只听我们说，自己测一下</h2>
+              <p>
+                中转接口最让人不放心的，是不知道背后到底是不是你选的模型。我们接入了开源项目
+                ModelTrace：让模型写三串数字，再和已知模型的“指纹”比对。代码原样引入、在你的浏览器里计算，结果和报告都可以拿去用原项目复核。</p>
+              <div class="oc-hero-actions">
+                <RouterLink to="/model-test" class="oc-button primary"
+                  >去检测一次 <Icon name="arrow" /></RouterLink
+                ><a
+                  class="oc-button"
+                  href="https://github.com/xqy2006/ModelTrace"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >查看开源项目 ↗</a
+                >
+              </div>
+            </div>
+            <ol class="oc-verify-steps">
+              <li><b>选模型</b><span>默认已经帮你选好，也可以换</span></li>
+              <li><b>点“开始检测”</b><span>发 3 次请求，约 1 分钟，正常计费</span></li>
+              <li><b>看结论</b><span>一致 / 不一致 / 无法核验，一眼就懂</span></li>
+            </ol>
           </section>
           <div class="oc-section-heading">
             <div>
@@ -566,11 +590,11 @@ function logout(){auth.logout();void router.push('/home')}
           <section class="oc-start-banner">
             <div>
               <span class="oc-eyebrow">接入指南</span>
-              <h2>首次使用</h2>
-              <p>创建密钥 → 填写接口地址 → 选择模型。</p>
+              <h2>第一次用？三步就好</h2>
+              <p>创建密钥 → 复制接口地址 → 在客户端里选模型。卡住了就看教程，或者直接问我们。</p>
             </div>
             <RouterLink to="/help" class="oc-button"
-              >查看三步指南 <Icon name="arrow"
+              >看接入教程 <Icon name="arrow"
             /></RouterLink>
           </section>
         </template>
@@ -1074,64 +1098,16 @@ function logout(){auth.logout();void router.push('/home')}
             </div></template
           >
           <template v-if="page === '/help'"
-            ><HelpGuide />
-            <section id="cc-switch" class="oc-panel oc-faq">
-              <span class="oc-eyebrow">CC SWITCH</span>
-              <h2>用 CC Switch 接入 Claude Code</h2>
-              <p>CC Switch 可以管理 Claude Code 的接口配置。完成下面的设置后，Claude Code 使用你的 OpenCC 密钥调用模型，费用从本站余额扣除。</p>
-              <p>
-                <a class="oc-text-link" href="https://github.com/farion1231/cc-switch/releases" target="_blank" rel="noopener noreferrer">下载 CC Switch ↗</a>
-                · <a class="oc-text-link" href="https://github.com/farion1231/cc-switch/blob/main/docs/user-manual/zh/2-providers/2.1-add.md" target="_blank" rel="noopener noreferrer">项目使用手册 ↗</a>
-              </p>
-              <div class="oc-doc-step"><b>01</b><div>
-                <h3>准备密钥和模型</h3>
-                <p>先安装 Claude Code 和 CC Switch。在本站「API 密钥」创建一把 Claude 分组密钥，并从「模型广场」复制该分组可用的完整模型 ID。账户需有可用余额。</p>
-                <RouterLink to="/keys" class="oc-text-link">管理 API 密钥 →</RouterLink>
-              </div></div>
-              <div class="oc-doc-step"><b>02</b><div>
-                <h3>添加 OpenCC</h3>
-                <p>打开 CC Switch，选择 Claude Code，在「直连」页添加供应商，选择「自定义配置」。按下面填写，按钮名称可能随版本略有不同。</p>
-                <div class="oc-table-wrap"><table>
-                  <thead><tr><th>配置项</th><th>填写内容</th></tr></thead>
-                  <tbody>
-                    <tr><td>名称</td><td>OpenCC</td></tr>
-                    <tr><td>API 请求地址 / Base URL</td><td><code>{{ gatewayURL() }}</code> <button class="oc-button small" @click="copy(gatewayURL())">复制地址</button></td></tr>
-                    <tr><td>API Key</td><td>你在本站创建的密钥</td></tr>
-                    <tr><td>接口格式（如有）</td><td>Anthropic Messages</td></tr>
-                    <tr><td>模型 / 默认模型（如有）</td><td>该密钥所属分组可用的完整 Claude 模型 ID</td></tr>
-                  </tbody>
-                </table></div>
-                <p>这里填写服务根地址，不要追加 <code>/v1</code> 或 <code>/v1/messages</code>。需要设置 Sonnet、Opus、Haiku 映射时，分别填写该分组支持的对应型号。</p>
-              </div></div>
-              <div class="oc-doc-step"><b>03</b><div>
-                <h3>保存并切换</h3>
-                <p>保存后，在 OpenCC 卡片上点击「切换」（部分版本为「启用」），确认显示「使用中」。退出正在运行的 Claude Code，再从终端重新启动。</p>
-              </div></div>
-              <div class="oc-doc-step"><b>04</b><div>
-                <h3>发起一次请求</h3>
-                <p>选择已配置的模型，发送一条简短消息，然后在本站「用量明细」核对模型、请求时间和费用。出现记录后，说明请求已经过 OpenCC；模型名称本身不构成真实性证明，需要时可到「模型检测」继续测试。</p>
-                <RouterLink to="/usage" class="oc-text-link">查看用量明细 →</RouterLink>
-              </div></div>
-              <details><summary>切换后没有生效怎么办？</summary>
-                <p>确认 OpenCC 卡片为「使用中」，并重启 Claude Code。检查终端是否另外设置了 ANTHROPIC_BASE_URL、ANTHROPIC_AUTH_TOKEN 或 ANTHROPIC_API_KEY，避免旧配置覆盖当前设置。</p>
-                <p>如果 Claude Code 在 WSL 中运行，请确认 CC Switch 修改的是对应 WSL 用户的配置；只修改 Windows 用户目录不会自动更新 WSL 内的配置。</p>
-              </details>
-              <details><summary>出现认证失败或找不到模型怎么办？</summary>
-                <p>401 时核对密钥是否完整、有效；找不到模型时核对模型 ID 和密钥分组；余额不足时先充值。不要把本站密钥填入上游网站或其他供应商配置。</p>
-              </details>
-              <p class="oc-hint">此教程使用 Anthropic Messages 直连配置。CC Switch 的路由、聚合和协议转换属于其他接入方式，请按项目手册另行配置。</p>
-            </section>
-            <div class="oc-doc-layout">
+            ><div class="oc-doc-layout">
               <section class="oc-panel">
                 <span class="oc-eyebrow">QUICK START</span>
                 <h2>快速开始</h2>
                 <div class="oc-doc-step">
                   <b>01</b>
                   <div>
-                    <h3>创建独立的 API 密钥</h3>
+                    <h3>建一把密钥</h3>
                     <p>
-                      进入「API
-                      密钥」，选择模型对应的分组并创建密钥。把它保存在本机环境变量或服务端密钥管理器中。
+                      在「API 密钥」里选好分组，点创建。密钥就像密码，存在自己电脑上，别发到群里或截图里。
                     </p>
                     <RouterLink to="/keys" class="oc-text-link"
                       >前往创建 →</RouterLink
@@ -1141,7 +1117,7 @@ function logout(){auth.logout();void router.push('/home')}
                 <div class="oc-doc-step">
                   <b>02</b>
                   <div>
-                    <h3>配置客户端与协议</h3>
+                    <h3>把地址和密钥填进客户端</h3>
                     <p>
                       Claude / Anthropic 客户端的 Base URL：<code>{{
                         gatewayURL()
@@ -1158,10 +1134,10 @@ function logout(){auth.logout();void router.push('/home')}
                 <div class="oc-doc-step">
                   <b>03</b>
                   <div>
-                    <h3>选择模型，发起请求</h3>
+                    <h3>发一句话试试</h3>
                     <p>
-                      在模型广场复制模型 ID，替换示例中的 MODEL_ID。将密钥设置为
-                      OPENCC_API_KEY，完成请求后到用量明细核对结果。
+                      从模型广场复制模型 ID，替换右边示例里的 MODEL_ID，跑一下。
+                      在「用量明细」看到这条记录，就说明接通了。想确认模型是真的？去「模型检测」点一下。
                     </p>
                   </div>
                 </div>
@@ -1179,26 +1155,78 @@ function logout(){auth.logout();void router.push('/home')}
                 </p>
               </section>
             </div>
+            <section id="cc-switch" class="oc-panel oc-faq">
+              <span class="oc-eyebrow">CC SWITCH</span>
+              <h2>用 CC Switch 接入 Claude Code</h2>
+              <p>用 Claude Code 的话，推荐装个 CC Switch，点几下就能切换接口，不用手改配置文件。</p>
+              <p>
+                <a class="oc-text-link" href="https://github.com/farion1231/cc-switch/releases" target="_blank" rel="noopener noreferrer">下载 CC Switch ↗</a>
+                · <a class="oc-text-link" href="https://github.com/farion1231/cc-switch/blob/main/docs/user-manual/zh/2-providers/2.1-add.md" target="_blank" rel="noopener noreferrer">项目使用手册 ↗</a>
+              </p>
+              <div class="oc-doc-step"><b>01</b><div>
+                <h3>准备密钥和模型</h3>
+                <p>装好 Claude Code 和 CC Switch，在本站建一把 Claude 分组的密钥，确认账户里有余额。</p>
+                <RouterLink to="/keys" class="oc-text-link">管理 API 密钥 →</RouterLink>
+              </div></div>
+              <div class="oc-doc-step"><b>02</b><div>
+                <h3>添加 OpenCC</h3>
+                <p>打开 CC Switch → Claude Code → 添加供应商 → 自定义配置，照下表填（不同版本按钮名可能略有差别）。</p>
+                <div class="oc-table-wrap"><table>
+                  <thead><tr><th>配置项</th><th>填写内容</th></tr></thead>
+                  <tbody>
+                    <tr><td>名称</td><td>OpenCC</td></tr>
+                    <tr><td>API 请求地址 / Base URL</td><td><code>{{ gatewayURL() }}</code> <button class="oc-button small" @click="copy(gatewayURL())">复制地址</button></td></tr>
+                    <tr><td>API Key</td><td>你在本站创建的密钥</td></tr>
+                    <tr><td>接口格式（如有）</td><td>Anthropic Messages</td></tr>
+                    <tr><td>模型 / 默认模型（如有）</td><td>该密钥所属分组可用的完整 Claude 模型 ID</td></tr>
+                  </tbody>
+                </table></div>
+                <p>地址只填到域名，<b>不要</b>加 <code>/v1</code>。要分别设置 Sonnet / Opus / Haiku 时，填分组里对应的型号。</p>
+              </div></div>
+              <div class="oc-doc-step"><b>03</b><div>
+                <h3>保存并切换</h3>
+                <p>保存，在 OpenCC 卡片上点「切换」（或「启用」），看到「使用中」就行。然后重启 Claude Code。</p>
+              </div></div>
+              <div class="oc-doc-step"><b>04</b><div>
+                <h3>发起一次请求</h3>
+                <p>随便发一句话，然后到「用量明细」看看有没有这条记录。有记录就说明走的是 OpenCC。想确认背后真是你选的模型，到「模型检测」测一次。</p>
+                <RouterLink to="/usage" class="oc-text-link">查看用量明细 →</RouterLink>
+              </div></div>
+              <details><summary>切换后没有生效怎么办？</summary>
+                <p>确认 OpenCC 卡片为「使用中」，并重启 Claude Code。检查终端是否另外设置了 ANTHROPIC_BASE_URL、ANTHROPIC_AUTH_TOKEN 或 ANTHROPIC_API_KEY，避免旧配置覆盖当前设置。</p>
+                <p>如果 Claude Code 在 WSL 中运行，请确认 CC Switch 修改的是对应 WSL 用户的配置；只修改 Windows 用户目录不会自动更新 WSL 内的配置。</p>
+              </details>
+              <details><summary>出现认证失败或找不到模型怎么办？</summary>
+                <p>401 时核对密钥是否完整、有效；找不到模型时核对模型 ID 和密钥分组；余额不足时先充值。不要把本站密钥填入上游网站或其他供应商配置。</p>
+              </details>
+              <p class="oc-hint">此教程使用 Anthropic Messages 直连配置。CC Switch 的路由、聚合和协议转换属于其他接入方式，请按项目手册另行配置。</p>
+            </section>
+            <HelpGuide />
             <section class="oc-panel oc-faq">
               <h2>常见问题</h2>
               <details>
-                <summary>为什么我的请求没有成功？</summary>
+                <summary>请求失败了怎么办？</summary>
                 <p>
-                  先核对 API 地址、模型 ID、密钥所属分组与余额。401
-                  通常表示认证失败；429
-                  表示触发频率或并发限制；具体原因以接口返回为准。
+                  先看四样：地址、模型 ID、密钥的分组、余额。401 是密钥不对，429 是发得太快，稍等再试。
+                  还是不行，把报错和请求编号发给我们。
                 </p>
               </details>
               <details>
-                <summary>卡密兑换后在哪里查看余额？</summary>
+                <summary>怎么充值？</summary>
                 <p>
-                  购买卡密后在账户充值页兑换。到账后可查看余额和兑换记录。
+                  找管理员充值，或者在「账户充值」输入拿到的兑换码。到账后余额和兑换记录都能看到。
                 </p>
               </details>
               <details>
-                <summary>费用如何计算？</summary>
+                <summary>钱是怎么扣的？</summary>
                 <p>
-                  模型计费可能区分输入、输出、缓存、长上下文等。完整规则以模型广场中对应分组的价格表为准，最终扣费可在用量明细查看。
+                  按 Token 用多少扣多少，输入、输出、缓存分开算，价格表上的价格已经包含分组倍率。每一笔扣了多少，在「用量明细」里都查得到。
+                </p>
+              </details>
+              <details>
+                <summary>怎么知道模型是不是真的？</summary>
+                <p>
+                  到「模型检测」点一下“开始检测”。它用的是开源项目 ModelTrace，在你的浏览器里比对模型指纹，约 1 分钟出结果，报告可以拿去用原项目复核。
                 </p>
               </details>
             </section></template

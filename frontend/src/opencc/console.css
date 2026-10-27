@@ -904,6 +904,75 @@ a.oc-avatar:hover {
   color: var(--oc-muted);
   margin: 6px 0 20px;
 }
+.oc-verify-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  margin: 28px 0 8px;
+  padding: 28px 30px;
+  border-radius: var(--oc-radius);
+  background: var(--oc-hero-card);
+  color: var(--oc-hero-card-ink);
+}
+.oc-verify-band .oc-eyebrow {
+  color: var(--oc-hero-card-muted);
+}
+.oc-verify-band h2 {
+  font-size: 24px;
+  margin: 10px 0 12px;
+  color: var(--oc-hero-card-ink);
+}
+.oc-verify-copy p {
+  line-height: 1.85;
+  color: var(--oc-hero-card-muted);
+  margin-bottom: 20px;
+}
+.oc-verify-band .oc-button:not(.primary) {
+  background: transparent;
+  color: var(--oc-hero-card-ink);
+  border-color: rgb(255 255 255 / 0.25);
+}
+.oc-verify-steps {
+  list-style: none;
+  counter-reset: oc-verify;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+.oc-verify-steps li {
+  counter-increment: oc-verify;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  column-gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(255 255 255 / 0.06);
+}
+.oc-verify-steps li::before {
+  content: counter(oc-verify);
+  grid-row: span 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: var(--oc-brand);
+  color: var(--oc-on-brand);
+}
+.oc-verify-steps span {
+  font-size: 13px;
+  color: var(--oc-hero-card-muted);
+}
+@media (max-width: 900px) {
+  .oc-verify-band {
+    grid-template-columns: 1fr;
+    padding: 22px 18px;
+  }
+}
 .oc-start-banner {
   background: var(--oc-hero-card);
   color: var(--oc-hero-card-ink);

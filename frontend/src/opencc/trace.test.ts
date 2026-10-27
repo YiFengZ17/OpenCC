@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { runProbe, verdict } from './trace'
+import { runProbe, verdict, verdictTone, protocolFor, defaultModel } from './trace'
 import {
   parseNumbers,
   analyzeGlobalOutputs,
@@ -16,6 +16,21 @@ describe('ModelTrace integration', () => {
     expect(verdict('gpt-5.4', ['gpt-5.4'], 'claude-opus-4-6', 3)).toContain(
       '不一致'
     )
+  })
+  it('classifies the verdict with the same rules as the wording', () => {
+    expect(verdictTone('grok-4.5', ['gpt-5.4'], 'gpt-5.4', 3)).toBe('unknown')
+    expect(verdictTone('gpt-5.4', ['gpt-5.4'], 'gpt-5.4', 2)).toBe('unknown')
+    expect(verdictTone('gpt-5.4', ['gpt-5.4'], 'gpt-5.4', 3)).toBe('match')
+    expect(verdictTone('gpt-5.4', ['gpt-5.4', 'gpt-5.5'], 'gpt-5.5', 3)).toBe('mismatch')
+  })
+  it('picks the request format and a verifiable default model', () => {
+    expect(protocolFor('claude-opus-4-6')).toBe('anthropic')
+    expect(protocolFor('gpt-5.5')).toBe('openai')
+    const bank = ['gpt-5.5', 'claude-sonnet-4-6']
+    expect(defaultModel(['grok-4.5', 'gpt-5.5', 'claude-sonnet-4-6'], bank)).toBe('claude-sonnet-4-6')
+    expect(defaultModel(['grok-4.5', 'gpt-5.5'], bank)).toBe('gpt-5.5')
+    expect(defaultModel(['grok-4.5'], bank)).toBe('grok-4.5')
+    expect(defaultModel([], bank)).toBe('')
   })
   it('runs the upstream engine and produces normalized candidate probabilities', () => {
     const bank = bankData as unknown as Bank

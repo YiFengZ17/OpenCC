@@ -124,3 +124,28 @@ export function verdict(
     ? '检测结果与所选型号一致'
     : '检测结果与所选型号不一致，建议复测'
 }
+export type VerdictTone = 'match' | 'mismatch' | 'unknown'
+// Same rules as verdict(), as a state the page can colour.
+export function verdictTone(
+  claim: string,
+  bankIds: string[],
+  prediction: string,
+  valid: number
+): VerdictTone {
+  if (!bankIds.includes(claim) || valid < 3) return 'unknown'
+  return claim === prediction ? 'match' : 'mismatch'
+}
+// Claude models answer on Anthropic Messages; everything else on Chat Completions.
+export function protocolFor(model: string): TraceProtocol {
+  return model.startsWith('claude-') ? 'anthropic' : 'openai'
+}
+// Prefer a model the fingerprint bank can verify, Claude Sonnet first.
+export function defaultModel(options: string[], bankIds: string[]): string {
+  const verifiable = options.filter((m) => bankIds.includes(m))
+  return (
+    verifiable.find((m) => m.startsWith('claude-sonnet')) ??
+    verifiable[0] ??
+    options[0] ??
+    ''
+  )
+}

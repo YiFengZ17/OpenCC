@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { keysAPI } from '@/api/keys'
 import { modelPlazaAPI } from '@/api/modelPlaza'
 import type { ApiKey } from '@/types'
@@ -13,7 +13,15 @@ import {
   type Bank,
   type TraceResult
 } from './vendor/modeltrace/fingerprint-core.js'
-import { runProbe, verdict, type Probe, type TraceProtocol } from './trace'
+import {
+  runProbe,
+  verdict,
+  verdictTone,
+  protocolFor,
+  defaultModel,
+  type Probe,
+  type TraceProtocol
+} from './trace'
 import catalog from './catalog.json'
 import bankURL from './vendor/modeltrace/unified_bank.json?url'
 const keys = ref<ApiKey[]>([]),
@@ -21,8 +29,10 @@ const keys = ref<ApiKey[]>([]),
   model = ref(''),
   protocol = ref<TraceProtocol>('anthropic'),
   options = ref<string[]>([])
+const SOURCE = 'https://github.com/xqy2006/ModelTrace'
+const COMMIT = '6cd4a8ff0f3f4e49d6d6969dd2fbadfa1569fde2'
 const running = ref(false),
-  consent = ref(false),
+  protocolTouched = ref(false),
   error = ref(''),
   progress = ref(''),
   result = ref<TraceResult>(),
@@ -47,7 +57,22 @@ const conclusion = computed(() =>
       )
     : ''
 )
+const tone = computed(() =>
+  result.value
+    ? verdictTone(
+        reportModel.value,
+        ids.value,
+        result.value.prediction,
+        result.value.used_outputs
+      )
+    : 'unknown'
+)
+const verifiable = computed(() => ids.value.includes(model.value.trim()))
 const percent = (n: number) => (n * 100).toFixed(1) + '%'
+// Follow the model's natural API format until the user picks one by hand.
+watch(model, (m) => {
+  if (!protocolTouched.value) protocol.value = protocolFor(m.trim())
+})
 async function initialize() {
   error.value = ''
   try {
@@ -69,6 +94,7 @@ async function initialize() {
       ...new Set(data.groups.flatMap((g) => g.models.map((m) => m.name)))
     ]
     if (!options.value.length) options.value = catalog.models
+    model.value = defaultModel(options.value, ids.value)
     resetChallenges()
   } catch {
     error.value = '检测数据加载失败，请刷新重试。'
@@ -85,7 +111,6 @@ async function start() {
     running.value ||
     !selectedKey.value ||
     !model.value.trim() ||
-    !consent.value ||
     !bank.value
   )
     return
@@ -102,7 +127,7 @@ async function start() {
   try {
     for (let i = 0; i < 3; i++) {
       if (cancelled) break
-      progress.value = `正在发送第 ${i + 1} / 3 次测试请求`
+      progress.value = `第 ${i + 1} / 3 轮：等待模型回答`
       const c = challenges.value[i]
       const current = new AbortController()
       controller = current
@@ -186,8 +211,8 @@ function download() {
   if (!result.value) return
   const report = {
     tool: 'ModelTrace',
-    source: 'https://github.com/xqy2006/ModelTrace',
-    commit: '6cd4a8ff0f3f4e49d6d6969dd2fbadfa1569fde2',
+    source: SOURCE,
+    commit: COMMIT,
     created_at: new Date().toISOString(),
     requested_model: reportModel.value,
     mode: manualReport.value ? 'manual' : 'api',
@@ -213,223 +238,336 @@ function download() {
 function switchMode(value:boolean){manual.value=value;error.value='';resetChallenges()}
 </script>
 <template>
-  <div class="oc-info oc-trace-intro">
-    <strong>ModelTrace 模型归因检测</strong>
+  <section class="oc-trace-hero">
+    <span class="oc-eyebrow">ModelTrace · 开源模型指纹检测</span>
+    <h2>这个模型，真的是它自称的那个吗？</h2>
     <p>
-      ModelTrace 是一个开源模型归因工具。它让待测模型完成三条独立的长整数生成任务，
-      提取数字分布与序列特征，再与参考指纹比较，给出最相似的模型家族和版本。
-      本站接入的指纹库包含 {{ ids.length }} 个型号，可用于检查接口返回的模型行为是否与所选型号相符。
-    </p>
-    <a
-      href="https://github.com/xqy2006/ModelTrace"
-      target="_blank"
-      rel="noopener noreferrer"
-      >GitHub · xqy2006/ModelTrace ↗</a
-    >
-    <p>
-      算法与指纹库均可查看源码。你可以下载本次检测报告，或使用原项目独立复测。
-      OpenCC 使用其开源实现，未获得项目方对本站模型的认证。
-    </p>
-  </div>
+      不用相信我们的说法，自己测一下。ModelTrace 让模型做三道“随手写一长串数字”的题，每个模型写数字的习惯都不一样，就像指纹。把结果和 {{ ids.length || 18 }}
+      个已知模型的指纹比一比，就知道接口背后大概率是谁。</p>
+    <div class="oc-trace-badges">
+      <a :href="SOURCE" target="_blank" rel="noopener noreferrer"
+        ><b>第三方开源</b><span>xqy2006/ModelTrace · MIT ↗</span></a
+      ><a :href="`${SOURCE}/tree/${COMMIT}`" target="_blank" rel="noopener noreferrer"
+        ><b>代码原样引入</b><span>固定版本 {{ COMMIT.slice(0, 7) }}，可逐字比对 ↗</span></a
+      ><span
+        ><b>在你的浏览器里计算</b><span>指纹比对不经过我们的服务器</span></span
+      ><span><b>报告可复核</b><span>下载报告，用原项目独立复测</span></span>
+    </div>
+  </section>
   <div v-if="error" class="oc-error" role="alert">{{ error }}</div>
-  <div class="oc-two-column">
-    <section class="oc-panel">
-      <div class="oc-panel-head">
-        <h2>检测配置</h2>
-        <span class="oc-tag">本地计算</span>
-      </div>
-      <fieldset :disabled="running">
-        <label class="oc-field"
-          >模型 ID<input
-            v-model="model"
-            list="trace-models"
-            placeholder="输入需要检测的完整模型 ID" /><datalist
-            id="trace-models"
-          >
-            <option v-for="m in options" :key="m" :value="m" /></datalist
-        ></label>
-        <p v-if="model && !ids.includes(model)" class="oc-hint">
-          此型号不在当前指纹库中，检测后无法核验具体版本。Grok 暂无参考指纹。
-        </p>
-        <div class="oc-tabs oc-trace-modes">
-          <button
-            :class="{ selected: !manual }"
-            @click="switchMode(false)"
-          >
-            API 自动检测</button
-          ><button
-            :class="{ selected: manual }"
-            @click="switchMode(true)"
-          >
-            手动粘贴检测
-          </button>
-        </div>
-        <template v-if="!manual"
-          ><label class="oc-field"
-            >本站 API 密钥<select v-model="keyId">
-              <option v-for="k in keys" :key="k.id" :value="k.id">
-                {{ k.name }} · {{ k.group?.name || '默认分组' }}
-              </option>
-            </select></label
-          >
-          <p v-if="!keys.length" class="oc-hint">
-            没有可用密钥。请先在 API 密钥页面创建。
-          </p>
-          <label class="oc-field"
-            >接口格式<select v-model="protocol">
-              <option value="anthropic">Anthropic Messages</option>
-              <option value="openai">OpenAI Chat Completions</option>
-              <option value="responses">OpenAI Responses</option>
-            </select></label
-          ><label class="oc-consent"
-            ><input v-model="consent" type="checkbox" />我了解本次检测会发送 3
-            次请求，每次输出上限 4096 Tokens，按所选模型价格从余额扣费。</label
-          ><button
-            class="oc-button primary wide"
-            :disabled="!consent || !selectedKey || !model.trim() || !bank"
-            @click="start"
-          >
-            开始检测
-          </button></template
-        >
-      </fieldset>
-      <button v-if="running" class="oc-button wide" @click="cancel">
-        停止检测
-      </button>
-      <p v-if="running" class="oc-hint" role="status">{{ progress }}</p>
-    </section>
-    <section class="oc-panel oc-trace-notes">
-      <h2>怎么使用</h2>
-      <ol>
-        <li>填写完整模型 ID，选择有权调用该模型的本站密钥和接口格式。</li>
-        <li>确认调用费用后点击“开始检测”，等待三轮请求完成。</li>
-        <li>查看最相似候选、库内概率和请求记录，可下载报告留存。</li>
-      </ol>
-      <p>也可切换“手动粘贴检测”：把三条提示词分别发送给同一模型，每次使用新对话，再粘贴完整输出。</p>
-      <h2>如何理解结果</h2>
-      <p>
-        结果可为渠道一致性检查提供线索。库内概率只比较已收录候选，不能当作“纯度”或来源证明。
-        未收录型号也可能匹配到已有候选；系统提示词会影响输出，原项目提醒 Claude Code 环境可能存在较大偏差。
+  <section v-if="!manual" class="oc-panel oc-trace-run">
+    <div class="oc-panel-head">
+      <h2>一键检测</h2>
+      <button class="oc-text-link" @click="switchMode(true)">没有密钥？手动粘贴检测 →</button>
+    </div>
+    <fieldset :disabled="running">
+      <label class="oc-field"
+        >要检测的模型<input
+          v-model="model"
+          list="trace-models"
+          placeholder="例如 claude-sonnet-4-6" /><datalist id="trace-models">
+          <option v-for="m in options" :key="m" :value="m" /></datalist
+      ></label>
+      <p class="oc-hint">
+        <template v-if="!model.trim()">选择或输入完整的模型 ID。</template>
+        <template v-else-if="verifiable">✓ 指纹库收录了这个型号，可以核验到具体版本。</template>
+        <template v-else>指纹库还没有这个型号，只能看出最接近哪个已知模型，无法核验版本。</template>
       </p>
-      <ul>
-        <li>请求使用你选择的本站密钥，经过正常的模型转发与计费流程。</li>
-        <li>一次测试包含三条独立提示词，不携带历史对话。</li>
-        <li>输出截断、请求失败或有效数字不足，会标记为无效样本。</li>
-        <li>密钥不会发送给 ModelTrace 项目方。指纹计算在你的浏览器内完成。</li>
-        <li>指纹库未收录的模型也可能与已有候选相似，不能据此认定实际型号。</li>
-      </ul>
-      <details>
-        <summary>查看指纹库型号（{{ ids.length }}）</summary>
-        <p class="oc-bank-list">{{ ids.join('\n') }}</p>
+      <details class="oc-trace-advanced">
+        <summary>高级设置 · {{ selectedKey?.name || '未选择密钥' }} · {{ protocol === 'anthropic' ? 'Anthropic Messages' : protocol === 'responses' ? 'OpenAI Responses' : 'OpenAI Chat Completions' }}</summary>
+        <label class="oc-field"
+          >使用哪把本站密钥<select v-model="keyId">
+            <option v-for="k in keys" :key="k.id" :value="k.id">
+              {{ k.name }} · {{ k.group?.name || '默认分组' }}
+            </option>
+          </select></label
+        ><label class="oc-field"
+          >接口格式<select v-model="protocol" @change="protocolTouched = true">
+            <option value="anthropic">Anthropic Messages</option>
+            <option value="openai">OpenAI Chat Completions</option>
+            <option value="responses">OpenAI Responses</option>
+          </select></label
+        >
       </details>
-      <small>指纹库版本：6cd4a8ff · MIT License</small>
-    </section>
-  </div>
+      <p v-if="!keys.length" class="oc-hint">
+        还没有可用的密钥。<RouterLink to="/keys" class="oc-text-link">先去创建一把 →</RouterLink>
+      </p>
+      <button
+        class="oc-button primary wide"
+        :disabled="!selectedKey || !model.trim() || !bank"
+        @click="start"
+      >
+        开始检测</button>
+      <p class="oc-hint oc-trace-cost">
+        会用这把密钥发 3 次请求（每次最多 4096 个输出 Token），和平时调用一样计费，大约 1 分钟。</p>
+    </fieldset>
+    <div v-if="running || probes.length" class="oc-trace-steps" role="status">
+      <span
+        v-for="i in 3"
+        :key="i"
+        :class="{
+          done: probes[i - 1]?.valid,
+          bad: probes[i - 1] && !probes[i - 1].valid,
+          active: running && probes.length === i - 1
+        }"
+        ><i>{{ probes[i - 1] ? (probes[i - 1].valid ? '✓' : '!') : i }}</i>第 {{ i }} 轮</span
+      >
+    </div>
+    <ul v-if="!running && probes.some((p) => !p.valid)" class="oc-trace-failures">
+      <template v-for="(p, i) in probes" :key="i"
+        ><li v-if="!p.valid">第 {{ i + 1 }} 轮：{{ p.error }}</li></template
+      >
+    </ul>
+    <p v-if="running" class="oc-hint">{{ progress }}</p>
+    <button v-if="running" class="oc-button wide" @click="cancel">停止检测</button>
+  </section>
   <section v-if="manual" class="oc-panel">
     <div class="oc-panel-head">
-      <h2>手动测试</h2>
-      <button class="oc-button small" @click="resetChallenges">
-        重新生成提示词
-      </button>
+      <h2>手动粘贴检测</h2>
+      <button class="oc-text-link" @click="switchMode(false)">← 返回一键检测</button>
     </div>
     <p class="oc-hint">
-      将三条提示词分别发送给同一模型，每次开启独立对话，再粘贴完整输出。
-    </p>
+      适合在别的客户端里测试：把下面三条提示词分别发给同一个模型，每条都开新对话，再把完整回答贴回来。手动粘贴的内容无法证明来自哪个接口，报告里会注明。</p>
+    <label class="oc-field"
+      >模型 ID<input v-model="model" list="trace-models" placeholder="例如 claude-sonnet-4-6"
+    /></label>
     <div v-for="(c, i) in challenges" :key="c.id" class="oc-manual-probe">
-      <h3>测试 {{ i + 1 }} · {{ c.expected_count }} 个数字</h3>
+      <h3>第 {{ i + 1 }} 题 · 约 {{ c.expected_count }} 个数字</h3>
       <p>{{ c.prompt }}</p>
-      <button class="oc-button small" @click="copyPrompt(c.prompt)">
-        复制提示词</button
+      <button class="oc-button small" @click="copyPrompt(c.prompt)">复制提示词</button
       ><label class="oc-field"
-        >模型完整输出<textarea
+        >模型的完整回答<textarea
           v-model="manualTexts[i]"
           rows="4"
           maxlength="100000"
-          placeholder="粘贴本次测试的完整输出"
+          placeholder="粘贴这一题的完整回答"
         />
       </label>
     </div>
-    <button
-      class="oc-button primary"
-      :disabled="!model.trim() || !manualTexts.every((t) => t.trim())"
-      @click="analyzeManual"
-    >
-      计算检测结果
-    </button>
-  </section>
-  <section v-if="probes.length && !manual" class="oc-panel">
-    <h2>请求记录</h2>
-    <div v-for="(p, i) in probes" :key="i" class="oc-probe-row">
-      <span>测试 {{ i + 1 }}</span
-      ><span :class="['oc-tag', p.valid ? '' : 'amber']">{{
-        p.valid ? '有效样本' : p.error
-      }}</span
-      ><code>{{ p.request_id || '—' }}</code
-      ><small>{{ (p.duration_ms / 1000).toFixed(1) }} 秒</small>
+    <div class="oc-hero-actions">
+      <button
+        class="oc-button primary"
+        :disabled="!model.trim() || !manualTexts.every((t) => t.trim())"
+        @click="analyzeManual"
+      >
+        计算结果</button
+      ><button class="oc-button" @click="resetChallenges">换一组题目</button>
     </div>
   </section>
   <section v-if="result" class="oc-panel">
     <div class="oc-panel-head">
       <h2>检测结果</h2>
       <button class="oc-button small" @click="download">
-        <Icon name="order" />下载报告
-      </button>
+        <Icon name="order" />下载报告</button>
     </div>
-    <div class="oc-trace-verdict">{{ conclusion }}</div>
-    <p class="oc-hint">
-      所选型号：{{ reportModel }} · 有效样本：{{ result.used_outputs }} / 3 ·
-      {{
-        manualReport ? '手动粘贴的输出，未验证 API 来源' : '本站 API 自动测试'
-      }}
-    </p>
-    <div class="oc-trace-summary">
+    <div :class="['oc-trace-verdict', tone]">
+      <b>{{ tone === 'match' ? '✓' : tone === 'mismatch' ? '✕' : '?' }}</b>
       <div>
-        <small>最相似候选</small><strong>{{ result.prediction_name }}</strong>
-      </div>
-      <div>
-        <small>候选库内概率</small
-        ><strong>{{ percent(result.probability) }}</strong>
-      </div>
-      <div>
-        <small>候选家族</small
-        ><strong>{{ result.family_prediction_name }}</strong>
+        <strong>{{ conclusion }}</strong>
+        <small
+          >你选的是 {{ reportModel }}，最像 {{ result.prediction_name }}（库内概率{{ percent(result.probability) }}）· 有效样本 {{ result.used_outputs }} / 3 ·
+          {{ manualReport ? '手动粘贴' : '本站接口实测' }}</small
+        >
       </div>
     </div>
-    <p class="oc-hint">
-      该概率只在当前候选库内比较，不代表模型有对应百分比的“纯度”。型号一致也不能证明所有请求都使用同一模型。
-    </p>
-    <div class="oc-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>候选模型</th>
-            <th>库内概率</th>
-            <th>分布相似度</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in result.results" :key="r.model">
-            <td>{{ r.display_name }}</td>
-            <td>{{ percent(r.probability) }}</td>
-            <td>{{ percent(r.profile_similarity) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <p v-if="tone === 'mismatch'" class="oc-hint">
+      偶尔一次不一致可能是随机波动，建议隔一会儿再测一次；多次不一致请保留报告联系我们。</p>
+    <details class="oc-trace-details">
+      <summary>查看全部候选和请求记录</summary>
+      <div class="oc-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>候选模型</th>
+              <th>库内概率</th>
+              <th>分布相似度</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="r in result.results" :key="r.model">
+              <td>{{ r.display_name }}</td>
+              <td>{{ percent(r.probability) }}</td>
+              <td>{{ percent(r.profile_similarity) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-for="(p, i) in probes" :key="i" class="oc-probe-row">
+        <span>第 {{ i + 1 }} 轮</span
+        ><span :class="['oc-tag', p.valid ? '' : 'amber']">{{ p.valid ? '有效样本' : p.error }}</span
+        ><code>{{ p.request_id || '—' }}</code
+        ><small>{{ (p.duration_ms / 1000).toFixed(1) }} 秒</small>
+      </div>
+    </details>
+  </section>
+  <section class="oc-panel oc-trace-notes">
+    <h2>为什么可以相信这个结果</h2>
+    <ul>
+      <li>
+        <b>工具不是我们写的。</b>ModelTrace 是独立的开源项目，算法、题目生成和指纹库都按原样引入，<a :href="`${SOURCE}/tree/${COMMIT}`" target="_blank" rel="noopener noreferrer">固定在 {{ COMMIT.slice(0, 7) }} 版本</a>，任何人都能比对代码。</li>
+      <li><b>题目每次随机抽取。</b>每次从题库里随机组合三道题，接口很难提前知道这一次考什么。</li>
+      <li><b>计算在你的浏览器里完成。</b>我们只负责把请求转给模型，比对过程不经过我们的服务器。</li>
+      <li><b>密钥只发给本站接口。</b>不会发给 ModelTrace 项目方或任何第三方地址。</li>
+      <li><b>结果可以独立复核。</b>下载报告后，可以用原项目对同一个接口再测一次。</li>
+    </ul>
+    <details>
+      <summary>结果的边界（请读一下）</summary>
+      <p>
+        库内概率只在已收录的 {{ ids.length }} 个模型之间比较，不是“纯度百分比”。没收录的模型可能被归到最像的已知模型上；系统提示词会影响输出，原项目提醒 Claude Code 等环境下偏差可能较大。一次检测一致，也不能保证每一次请求都来自同一个模型，所以我们建议定期复测。</p>
+      <p class="oc-bank-list">{{ ids.join('\n') }}</p>
+    </details>
+    <small>ModelTrace {{ COMMIT.slice(0, 7) }} · MIT License · OpenCC 使用其开源实现，未经项目方认证或背书</small>
   </section>
 </template>
 <style scoped>
-.oc-trace-intro p {
-  margin: 8px 0;
+.oc-trace-hero {
+  padding: 28px 30px;
+  border-radius: var(--oc-radius);
+  background: var(--oc-hero-card);
+  color: var(--oc-hero-card-ink);
+  margin-bottom: 20px;
+}
+.oc-trace-hero .oc-eyebrow {
+  color: var(--oc-hero-card-muted);
+}
+.oc-trace-hero h2 {
+  font-size: 26px;
+  line-height: 1.35;
+  margin: 10px 0 12px;
+  color: var(--oc-hero-card-ink);
+}
+.oc-trace-hero > p {
+  max-width: 760px;
+  line-height: 1.85;
+  color: var(--oc-hero-card-muted);
+}
+.oc-trace-badges {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+.oc-trace-badges > * {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(255 255 255 / 0.06);
+  color: inherit;
+  text-decoration: none;
+}
+.oc-trace-badges a:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+.oc-trace-badges b {
+  font-size: 14px;
+}
+.oc-trace-badges > * > span {
+  font-size: 12.5px;
+  color: var(--oc-hero-card-muted);
+}
+.oc-trace-run fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.oc-trace-advanced {
+  margin: 14px 0;
+  font-size: 14px;
+  color: var(--oc-ink-2);
+}
+.oc-trace-advanced summary,
+.oc-trace-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--oc-brand-ink);
+}
+.oc-trace-advanced .oc-field {
+  margin-top: 12px;
+}
+.oc-trace-cost {
+  text-align: center;
+  margin-top: 10px;
+}
+.oc-trace-steps {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.oc-trace-steps span {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--oc-line);
+  background: var(--oc-surface-2);
+  font-size: 13.5px;
+  color: var(--oc-muted);
+}
+.oc-trace-steps i {
+  font-style: normal;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--oc-surface-3);
+}
+.oc-trace-steps .active {
+  border-color: var(--oc-brand-line);
+  color: var(--oc-brand-ink);
+}
+.oc-trace-steps .active i {
+  animation: oc-trace-pulse 1.2s ease-in-out infinite;
+  background: var(--oc-brand-soft);
+}
+.oc-trace-steps .done {
+  border-color: var(--oc-brand-line);
+  background: var(--oc-brand-soft);
+  color: var(--oc-brand-ink);
+}
+.oc-trace-steps .done i {
+  background: var(--oc-brand);
+  color: var(--oc-on-brand);
+}
+.oc-trace-steps .bad {
+  border-color: var(--oc-warn-line);
+  background: var(--oc-warn-bg);
+  color: var(--oc-warn-ink);
+}
+@keyframes oc-trace-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oc-trace-steps .active i {
+    animation: none;
+  }
+}
+.oc-trace-failures {
+  margin: 12px 0 0;
+  padding: 10px 14px 10px 30px;
+  list-style: disc;
+  border-radius: 10px;
+  background: var(--oc-warn-bg);
+  border: 1px solid var(--oc-warn-line);
+  color: var(--oc-warn-ink);
+  font-size: 13.5px;
   line-height: 1.8;
 }
-.oc-trace-intro a {
-  font-size: 13.5px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.oc-trace-details {
+  margin-top: 18px;
+  font-size: 14px;
 }
-.oc-trace-modes {
-  margin: 4px 0 20px;
+.oc-trace-details .oc-table-wrap {
+  margin: 14px 0;
 }
 .oc-trace-notes h2 {
   margin-bottom: 10px;
@@ -488,42 +626,54 @@ function switchMode(value:boolean){manual.value=value;error.value='';resetChalle
   border-radius: 10px;
 }
 .oc-trace-verdict {
-  padding: 16px 18px;
-  background: var(--oc-brand-soft);
-  border: 1px solid var(--oc-brand-line);
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--oc-ink);
-  line-height: 1.7;
-}
-.oc-trace-summary {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  display: flex;
   gap: 16px;
-  margin: 22px 0;
-}
-.oc-trace-summary > div {
-  padding: 14px 16px;
-  background: var(--oc-surface-2);
-  border: 1px solid var(--oc-line);
+  align-items: center;
+  padding: 18px 20px;
   border-radius: 12px;
-  min-width: 0;
+  border: 1px solid var(--oc-warn-line);
+  background: var(--oc-warn-bg);
+  color: var(--oc-warn-ink);
 }
-.oc-trace-summary small {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--oc-muted);
-}
-.oc-trace-summary strong {
-  display: block;
-  overflow-wrap: anywhere;
+.oc-trace-verdict > b {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
   font-size: 20px;
-  margin-top: 6px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
+  background: var(--oc-surface);
+}
+.oc-trace-verdict strong {
+  display: block;
+  font-size: 18px;
+  color: var(--oc-ink);
+}
+.oc-trace-verdict small {
+  display: block;
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--oc-ink-2);
+  overflow-wrap: anywhere;
+}
+.oc-trace-verdict.match {
+  border-color: var(--oc-brand-line);
+  background: var(--oc-brand-soft);
+  color: var(--oc-brand-ink);
+}
+.oc-trace-verdict.mismatch {
+  border-color: var(--oc-danger-line);
+  background: var(--oc-danger-bg);
+  color: var(--oc-danger);
+}
+.oc-trace-notes li b {
+  color: var(--oc-ink);
+}
+.oc-trace-notes a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .oc-probe-row {
   display: flex;
@@ -568,12 +718,23 @@ function switchMode(value:boolean){manual.value=value;error.value='';resetChalle
 .oc-manual-probe .oc-field {
   margin-top: 16px;
 }
+@media (max-width: 900px) {
+  .oc-trace-badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 720px) {
-  .oc-trace-summary {
+  .oc-trace-hero {
+    padding: 22px 18px;
+  }
+  .oc-trace-hero h2 {
+    font-size: 21px;
+  }
+  .oc-trace-badges {
     grid-template-columns: 1fr;
   }
-  .oc-trace-summary strong {
-    font-size: 18px;
+  .oc-trace-steps {
+    flex-direction: column;
   }
   .oc-probe-row small {
     margin-left: 0;
