@@ -27,21 +27,35 @@ p.add_argument("--balance", type=float, default=100.0)
 args = p.parse_args()
 
 lock = threading.Lock()
-state = {"balance": args.balance, "cost": 0.0, "actual_cost": 0.0, "requests": []}
+state = {"balance": args.balance, "cost": 0.0, "actual_cost": 0.0, "requests": [], "cached": set()}
 
 
 def usage_for(req):
+    """Deterministic usage; system blocks marked cache_control are cached like Anthropic does."""
     text = json.dumps(req.get("messages", []), ensure_ascii=False)
-    return {
+    usage = {
         "input_tokens": max(10, len(text) // 4),
         "output_tokens": min(int(req.get("max_tokens") or 200), 200),
         "cache_creation_input_tokens": 0,
         "cache_read_input_tokens": 0,
     }
+    system = req.get("system")
+    if isinstance(system, list):
+        for block in system:
+            if not isinstance(block, dict) or "cache_control" not in block:
+                continue
+            tokens = max(1, len(block.get("text", "")) // 4)
+            with lock:
+                hit = block.get("text") in state["cached"]
+                state["cached"].add(block.get("text"))
+            usage["cache_read_input_tokens" if hit else "cache_creation_input_tokens"] += tokens
+    return usage
 
 
 def charge(usage):
-    standard = usage["input_tokens"] * args.input_price + usage["output_tokens"] * args.output_price
+    standard = (usage["input_tokens"] * args.input_price + usage["output_tokens"] * args.output_price
+                + usage["cache_creation_input_tokens"] * args.input_price * 1.25
+                + usage["cache_read_input_tokens"] * args.input_price * 0.1)
     with lock:
         state["balance"] -= args.multiplier * standard + args.fixed_fee
         state["cost"] += standard

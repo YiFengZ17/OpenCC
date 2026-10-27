@@ -19,6 +19,7 @@
 7. opencc-docs/07-验收记录.md、09-前端更新验收.md：已验证与未验证项。
 
 计费自测：`tools/opencc-billing-selftest/run-local.sh`（本地临时环境 + 模拟上游，10 项检查）。
+用量验收（真实部署 + 真实上游，花费 ≤ ¥2）：`tools/opencc-usage-test/`，可直接把其中的 `AGENT_TASK.md` 交给测试 agent。
 
 早期规划文档（01–03 及实施计划）不在本仓库中。
 
